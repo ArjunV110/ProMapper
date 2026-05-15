@@ -1,0 +1,11 @@
+# Auto-detect text files
+* text=auto
+
+# Python
+*.py text diff=python
+
+# Markdown
+*.md text
+
+# Binary
+*.pyc binary
