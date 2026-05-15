@@ -14,12 +14,12 @@ from concurrent.futures import ThreadPoolExecutor
 from threading import Lock
 from typing import Any, Dict, List, Optional, Tuple
 
-from nmapclone.config import (
+from promapper.config import (
     SSL_PORTS, IS_WINDOWS, IS_TERMUX, HAS_SCAPY,
     cfg, TTL_RE, SSH_BANNER_RE, _get_ssl_ctx,
 )
-from nmapclone.scanner import _ping_cmd
-from nmapclone.scanner import resolve_host
+from promapper.scanner import _ping_cmd
+from promapper.scanner import resolve_host
 
 logger = logging.getLogger(__name__)
 
@@ -156,7 +156,7 @@ def detect_http_tech(host: str, port: int = 80) -> Dict[str, str]:
     techs: Dict[str, str] = {}
     try:
         conn = _http_conn(host, port, cfg().timeout)
-        conn.request("GET", "/", headers={"User-Agent": "Mozilla/5.0 nmapclone"})
+        conn.request("GET", "/", headers={"User-Agent": "Mozilla/5.0 promapper"})
         resp = conn.getresponse()
         combined = str(resp.headers) + resp.read(50000).decode("utf-8", errors="replace")
         conn.close()
@@ -299,7 +299,7 @@ def dir_brute_force(host: str, port: int, wordlist_path: Optional[str] = None,
         try:
             conn = _http_conn(host, port, t)
             path = "/" + d.lstrip("/")
-            conn.request("GET", path, headers={"User-Agent": "Mozilla/5.0 nmapclone"})
+            conn.request("GET", path, headers={"User-Agent": "Mozilla/5.0 promapper"})
             resp = conn.getresponse()
             status = resp.status
             resp.read()
@@ -334,7 +334,7 @@ def api_discovery(host: str, port: int, timeout_val: Optional[float] = None) -> 
     def check_api(path: str) -> None:
         try:
             conn = _http_conn(host, port, t)
-            conn.request("GET", path, headers={"User-Agent": "Mozilla/5.0 nmapclone"})
+            conn.request("GET", path, headers={"User-Agent": "Mozilla/5.0 promapper"})
             resp = conn.getresponse()
             status = resp.status
             body = resp.read(500).decode("utf-8", errors="replace")

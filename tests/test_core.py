@@ -1,15 +1,15 @@
-"""Core functional tests for nmapclone."""
+"""Core functional tests for promapper."""
 import sys
 import os
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
-from nmapclone import ScanConfig, cfg, cfg_set
-from nmapclone.datatypes import PortResult, HostResult
-from nmapclone.formatters import _escape_cell
-from nmapclone.config import _is_valid_target
-from nmapclone.lookup import lookup_mac_vendor
-from nmapclone.scanner import parse_ports, get_service_name
+from promapper import ScanConfig, cfg, cfg_set
+from promapper.datatypes import PortResult, HostResult
+from promapper.formatters import _escape_cell
+from promapper.config import _is_valid_target
+from promapper.lookup import lookup_mac_vendor
+from promapper.scanner import parse_ports, get_service_name
 
 
 def test_parse_ports():

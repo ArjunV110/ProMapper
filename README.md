@@ -1,10 +1,10 @@
-# nmapclone
+# promapper
 
 **Production-grade cross-platform network scanner** — Linux, macOS, Windows, Android Termux.
 
 ```bash
-pip install nmapclone
-nmapclone scanme.nmap.org -p 22,80 --banner
+pip install promapper
+promapper scanme.nmap.org -p 22,80 --banner
 ```
 
 ## Features
@@ -26,19 +26,19 @@ nmapclone scanme.nmap.org -p 22,80 --banner
 
 ```bash
 # Basic scan
-python3 nmapclone.py scanme.nmap.org
+python3 promapper.py scanme.nmap.org
 
 # Port range + OS detection + service version
-python3 nmapclone.py 192.168.1.0/24 -p 1-1024 -O -sV --geo
+python3 promapper.py 192.168.1.0/24 -p 1-1024 -O -sV --geo
 
 # Web application audit
-python3 nmapclone.py example.com -p 80,443 --http-tech --dir-bust --ssl-cert
+python3 promapper.py example.com -p 80,443 --http-tech --dir-bust --ssl-cert
 
 # Continuous monitoring with change detection
-python3 nmapclone.py 10.0.0.1 --continuous --diff --notify
+python3 promapper.py 10.0.0.1 --continuous --diff --notify
 
 # Full router scan with output
-python3 nmapclone.py 192.168.1.1 -p 1-65535 --banner --os-guess -oJ scan.json --html report.html
+python3 promapper.py 192.168.1.1 -p 1-65535 --banner --os-guess -oJ scan.json --html report.html
 ```
 
 ## Installation
@@ -46,33 +46,33 @@ python3 nmapclone.py 192.168.1.1 -p 1-65535 --banner --os-guess -oJ scan.json --
 ### From Source (recommended)
 
 ```bash
-git clone https://github.com/anomalyco/nmapclone.git
-cd nmapclone
+git clone https://github.com/anomalyco/promapper.git
+cd promapper
 pip install -e .
 ```
 
 ### Direct (no install)
 
 ```bash
-git clone https://github.com/anomalyco/nmapclone.git
-cd nmapclone
-python3 nmapclone.py scanme.nmap.org
+git clone https://github.com/anomalyco/promapper.git
+cd promapper
+python3 promapper.py scanme.nmap.org
 ```
 
 ### Optional Dependencies
 
 ```bash
-pip install nmapclone[full]       # All extras
-pip install nmapclone[scapy]      # SYN/FIN/NULL/Xmas/ACK/Window/Maimon scans
-pip install nmapclone[crypto]     # SSL certificate fingerprints
-pip install nmapclone[paramiko]   # SSH brute-force
-pip install nmapclone[dnspython]  # Custom DNS resolver
+pip install promapper[full]       # All extras
+pip install promapper[scapy]      # SYN/FIN/NULL/Xmas/ACK/Window/Maimon scans
+pip install promapper[crypto]     # SSL certificate fingerprints
+pip install promapper[paramiko]   # SSH brute-force
+pip install promapper[dnspython]  # Custom DNS resolver
 ```
 
 ## Usage
 
 ```
-python3 nmapclone.py <target> [options]
+python3 promapper.py <target> [options]
 ```
 
 ### Target Specification
@@ -156,14 +156,14 @@ python3 nmapclone.py <target> [options]
 ## Architecture
 
 ```
-nmapclone/
-├── nmapclone.py          ← Entry point
+promapper/
+├── promapper.py          ← Entry point
 ├── pyproject.toml        ← Package config (pip install)
 ├── README.md
 ├── LICENSE               ← MIT
-└── nmapclone/            ← Python package
+└── promapper/            ← Python package
     ├── __init__.py       ← Package metadata
-    ├── __main__.py       ← python -m nmapclone
+    ├── __main__.py       ← python -m promapper
     ├── cli.py            ← CLI, argparse, main loop
     ├── config.py         ← Immutable ScanConfig, constants
     ├── datatypes.py      ← PortResult, HostResult

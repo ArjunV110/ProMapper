@@ -15,7 +15,7 @@ import urllib.error
 import urllib.request
 from typing import Any, Dict, List, Optional
 
-from nmapclone.config import IS_WINDOWS, cfg, SHELL_META
+from promapper.config import IS_WINDOWS, cfg, SHELL_META
 
 logger = logging.getLogger(__name__)
 
@@ -34,7 +34,7 @@ def geo_lookup(ip: str, retries: int = 2) -> Dict[str, Any]:
                 f"?fields=status,country,countryCode,region,regionName,"
                 f"city,zip,lat,lon,timezone,isp,org,as,query"
             )
-            req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0 nmapclone"})
+            req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0 promapper"})
             with urllib.request.urlopen(req, timeout=5) as resp:
                 data = json.loads(resp.read())
                 if data.get("status") == "success":
@@ -96,7 +96,7 @@ def shodan_query(ip: str) -> Dict[str, Any]:
     try:
         req = urllib.request.Request(
             f"https://api.shodan.io/shodan/host/{ip}",
-            headers={"User-Agent": "Mozilla/5.0 nmapclone"},
+            headers={"User-Agent": "Mozilla/5.0 promapper"},
         )
         b64_key = base64.b64encode(f"{api_key}:".encode()).decode()
         req.add_header("Authorization", f"Basic {b64_key}")

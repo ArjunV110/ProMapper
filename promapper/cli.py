@@ -15,20 +15,20 @@ import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from typing import List, Tuple
 
-from nmapclone import __version__
-from nmapclone.config import (
+from promapper import __version__
+from promapper.config import (
     ScanConfig, cfg, cfg_set, configure_logging,
     MAX_GLOBAL_THREADS, BANNER_ART, IS_TERMUX, HAS_SCAPY,
     INVALID_PATH, _is_valid_target,
 )
-from nmapclone.datatypes import HostResult
-from nmapclone.orchestrator import scan_host
-from nmapclone.scanner import expand_targets, arp_discovery, parse_ports
-from nmapclone.lookup import lookup_mac_vendor
-from nmapclone.formatters import (
+from promapper.datatypes import HostResult
+from promapper.orchestrator import scan_host
+from promapper.scanner import expand_targets, arp_discovery, parse_ports
+from promapper.lookup import lookup_mac_vendor
+from promapper.formatters import (
     fmt_terminal, fmt_json, fmt_xml, fmt_csv, fmt_grepable, fmt_html,
 )
-from nmapclone.state import load_state, save_state, diff_results, send_notification
+from promapper.state import load_state, save_state, diff_results, send_notification
 
 logger = logging.getLogger(__name__)
 
@@ -132,19 +132,19 @@ def _write_outputs(results: List[HostResult], args: argparse.Namespace,
 
 def _build_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(
-        prog="nmapclone",
+        prog="promapper",
         formatter_class=argparse.RawDescriptionHelpFormatter,
-        description="Ultra-feature network scanner — cross-platform",
+        description="PRO Network Mapper — cross-platform",
         epilog="""Examples:
-  python nmapclone.py scanme.nmap.org
-  python nmapclone.py 192.168.1.0/24 -p 1-1024 -O -sV --geo
-  python nmapclone.py example.com -p 80,443 --http-tech --dir-bust --ssl-cert
-  python nmapclone.py target.com --brute ssh,ftp --user admin -P wordlist.txt
-  python nmapclone.py 10.0.0.1 --continuous --diff --html report.html
-  python nmapclone.py targets.txt -p 22 --ssh-key --os-guess
+  python promapper.py scanme.nmap.org
+  python promapper.py 192.168.1.0/24 -p 1-1024 -O -sV --geo
+  python promapper.py example.com -p 80,443 --http-tech --dir-bust --ssl-cert
+  python promapper.py target.com --brute ssh,ftp --user admin -P wordlist.txt
+  python promapper.py 10.0.0.1 --continuous --diff --html report.html
+  python promapper.py targets.txt -p 22 --ssh-key --os-guess
 """,
     )
-    p.add_argument("-V", "--version", action="version", version=f"nmapclone {__version__}",
+    p.add_argument("-V", "--version", action="version", version=f"promapper {__version__}",
                    help="Show version and exit")
 
     g_target = p.add_argument_group("Target Specification")
@@ -315,7 +315,7 @@ def main() -> None:
                 for c in changes:
                     print(f"    {c}")
                 if args.notify:
-                    send_notification("nmapclone", f"{len(changes)} change(s) detected")
+                    send_notification("promapper", f"{len(changes)} change(s) detected")
             save_state(results)
 
         output_text = fmt_terminal(results, args)

@@ -3,13 +3,13 @@ requires = ["setuptools>=68.0"]
 build-backend = "setuptools.backends._legacy:_Backend"
 
 [project]
-name = "nmapclone"
+name = "promapper"
 version = "3.1.0"
 description = "Production-grade cross-platform network scanner"
 readme = "README.md"
 license = {text = "MIT"}
 authors = [
-    {name = "nmapclone Team"},
+    {name = "promapper Team"},
 ]
 keywords = ["network", "scanner", "security", "nmap", "port-scan"]
 classifiers = [
@@ -31,9 +31,9 @@ requires-python = ">=3.9"
 dependencies = []
 
 [project.urls]
-Homepage = "https://github.com/anomalyco/nmapclone"
-Repository = "https://github.com/anomalyco/nmapclone"
-Issues = "https://github.com/anomalyco/nmapclone/issues"
+Homepage = "https://github.com/anomalyco/promapper"
+Repository = "https://github.com/anomalyco/promapper"
+Issues = "https://github.com/anomalyco/promapper/issues"
 
 [project.optional-dependencies]
 scapy = ["scapy"]
@@ -43,7 +43,7 @@ dnspython = ["dnspython"]
 full = ["scapy", "cryptography", "paramiko", "dnspython"]
 
 [project.scripts]
-nmapclone = "nmapclone.cli:main"
+promapper = "promapper.cli:main"
 
 [tool.setuptools.packages.find]
-include = ["nmapclone*"]
+include = ["promapper*"]

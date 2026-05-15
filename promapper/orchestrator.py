@@ -10,21 +10,21 @@ import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from typing import Dict, List, Optional, Tuple
 
-from nmapclone.config import cfg, BANNER_VER_RE, SSL_PORTS, HAS_SCAPY, IS_TERMUX
-from nmapclone.datatypes import HostResult, PortResult
-from nmapclone.scanner import (
+from promapper.config import cfg, BANNER_VER_RE, SSL_PORTS, HAS_SCAPY, IS_TERMUX
+from promapper.datatypes import HostResult, PortResult
+from promapper.scanner import (
     resolve_host, reverse_dns, measure_latency, parse_ports, get_service_name,
     icmp_ping, ping_sweep, scan_single_port,
     idle_scan, banner_grab, get_ssl_cert, extract_ssh_key,
     traceroute, arp_discovery,
 )
-from nmapclone.detection import (
+from promapper.detection import (
     guess_os, detect_http_tech, detect_waf, detect_cdn, detect_cloud,
     detect_honeypot, dir_brute_force, api_discovery, subdomain_enum,
     check_cves,
 )
-from nmapclone.lookup import geo_lookup, whois_lookup, shodan_query, lookup_mac_vendor
-from nmapclone.brute import brute_force
+from promapper.lookup import geo_lookup, whois_lookup, shodan_query, lookup_mac_vendor
+from promapper.brute import brute_force
 
 logger = logging.getLogger(__name__)
 

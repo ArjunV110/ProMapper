@@ -13,8 +13,8 @@ import xml.etree.ElementTree as ET
 from dataclasses import asdict
 from typing import Dict, List, Optional, Tuple
 
-from nmapclone.config import BOX_WIDTH, _supports_color, BANNER_ART
-from nmapclone.datatypes import HostResult, PortResult
+from promapper.config import BOX_WIDTH, _supports_color, BANNER_ART
+from promapper.datatypes import HostResult, PortResult
 
 _ansi_strip: re.Pattern = re.compile(r'\033\[[0-9;]*m')
 _CONTROL_CHARS: re.Pattern = re.compile(r'[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]')
@@ -267,7 +267,7 @@ def fmt_json(results: List[HostResult]) -> str:
 
 # ── XML ──────────────────────────────────────────────────────────────────
 def fmt_xml(results: List[HostResult]) -> str:
-    root = ET.Element("nmapclone", attrib={"version": "3.1"})
+    root = ET.Element("promapper", attrib={"version": "3.1"})
     ts = ET.SubElement(root, "scan", attrib={"started": datetime.datetime.now().isoformat()})
     for r in results:
         rh = ET.SubElement(ts, "host", attrib={
@@ -368,7 +368,7 @@ def fmt_html(results: List[HostResult]) -> str:
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>nmapclone Report - {_escape_html(datetime.datetime.now().strftime('%Y-%m-%d %H:%M'))}</title>
+<title>promapper Report - {_escape_html(datetime.datetime.now().strftime('%Y-%m-%d %H:%M'))}</title>
 <style>
 body {{ font-family: 'Segoe UI', sans-serif; margin: 20px; background: #0d1117; color: #c9d1d9; }}
 h1 {{ color: #58a6ff; }}
@@ -383,7 +383,7 @@ small {{ color: #8b949e; }}
 </style>
 </head>
 <body>
-<h1>nmapclone Scan Report</h1>
+<h1>promapper Scan Report</h1>
 <p>Generated: {_escape_html(datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'))} | Hosts: {len(results)}</p>
 <table>
 <tr><th>Host</th><th>OS</th><th>Latency</th><th>Geo</th><th>CDN/Cloud</th><th>Open Ports</th></tr>

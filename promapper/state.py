@@ -11,12 +11,12 @@ import tempfile
 import threading
 from typing import Any, Dict, List
 
-from nmapclone.config import IS_WINDOWS, IS_MACOS, cfg
-from nmapclone.datatypes import HostResult
+from promapper.config import IS_WINDOWS, IS_MACOS, cfg
+from promapper.datatypes import HostResult
 
 logger = logging.getLogger(__name__)
 
-_STATE_FILE: str = os.path.join(tempfile.gettempdir(), "nmapclone_state.json")
+_STATE_FILE: str = os.path.join(tempfile.gettempdir(), "promapper_state.json")
 _STATE_LOCK: threading.Lock = threading.Lock()
 
 

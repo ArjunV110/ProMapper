@@ -17,13 +17,13 @@ import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from typing import Any, Callable, Dict, List, Optional, Tuple
 
-from nmapclone.config import (
+from promapper.config import (
     SSL_PORTS, MAX_CIDR_HOSTS, BANNER_GRAB_MAX,
     IS_WINDOWS, IS_MACOS, IS_TERMUX, HAS_SCAPY, HAS_DNS, HAS_CRYPTO,
     ScanConfig, cfg, _get_ssl_ctx,
     TTL_RE, TRACEROUTE_RE, BANNER_VER_RE,
 )
-from nmapclone.datatypes import PortResult, HostResult
+from promapper.datatypes import PortResult, HostResult
 
 logger = logging.getLogger(__name__)
 

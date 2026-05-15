@@ -12,7 +12,7 @@ import socket
 import time
 from typing import Callable, Dict, List, Optional
 
-from nmapclone.config import cfg, _get_ssl_ctx, SSL_PORTS
+from promapper.config import cfg, _get_ssl_ctx, SSL_PORTS
 
 logger = logging.getLogger(__name__)
 
