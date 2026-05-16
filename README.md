@@ -4,7 +4,7 @@
 
 ```bash
 pip install promapper
-promapper scanme.pmapper.org -p 22,80 --banner
+promapper scanme.nmap.org -p 22,80 --banner
 ```
 
 ## Features
@@ -37,7 +37,7 @@ pip install -e .
 ```bash
 git clone https://github.com/ArjunV110/ProMapper.git
 cd ProMapper
-promapper scanme.pmapper.org
+promapper scanme.nmap.org
 ```
 
 ### Optional Dependencies
@@ -161,9 +161,9 @@ promapper/
 
 ```
   ┌─ Host Overview ──────────────────────────────────────────────────────┐
-  │ Hostname             scanme.pmapper.org                                 │
+  │ Hostname             scanme.nmap.org                                 │
   │ IP Address           45.33.32.156                                    │
-  │ Reverse DNS          scanme.pmapper.org                                 │
+  │ Reverse DNS          scanme.nmap.org                                 │
   │ Latency              234.6 ms                                        │
   └──────────────────────────────────────────────────────────────────────┘
 

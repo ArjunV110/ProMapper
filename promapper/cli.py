@@ -143,7 +143,7 @@ def _build_parser() -> argparse.ArgumentParser:
         formatter_class=argparse.RawDescriptionHelpFormatter,
         description="PRO Network Mapper — cross-platform",
         epilog="""Examples:
-  promapper scanme.pmapper.org
+  promapper scanme.nmap.org
   promapper 192.168.1.0/24 -p 1-1024 -O -sV --geo
   promapper example.com -p 80,443 --http-tech --dir-bust --ssl-cert
   promapper target.com --brute ssh,ftp --user admin -P wordlist.txt
