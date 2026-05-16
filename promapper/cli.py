@@ -30,8 +30,10 @@ from promapper.formatters import (
     fmt_terminal, fmt_termux, fmt_json, fmt_xml, fmt_csv, fmt_grepable, fmt_html,
 )
 
-# Auto-select formatter based on platform
-if IS_TERMUX:
+# Auto-select formatter: simple for narrow terminals, box for wide
+import shutil
+_term_width = shutil.get_terminal_size().columns
+if IS_TERMUX or _term_width < 74:
     _fmt = fmt_termux
 else:
     _fmt = fmt_terminal
