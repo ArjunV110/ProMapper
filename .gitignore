@@ -30,7 +30,7 @@ Thumbs.db
 *.txt
 
 # Temp state
-nmapclone_state.json
+promapper_state.json
 
 # Package
 *.egg
