@@ -22,15 +22,15 @@ promapper scanme.nmap.org -p 22,80 --banner
 | **Monitoring** | Continuous scans, diff detection, desktop notifications |
 | **Cross-platform** | Linux, macOS, Windows, Termux |
 
-## Super Command
+## Super Command (A-Z Install)
 
-After installing PROMAPPER normally (see below), run this to install **all optional dependencies** (scapy, cryptography, paramiko, dnspython) and required **system packages** (traceroute, whois, etc.) for advanced features:
+One command to install PROMAPPER **completely** — clones the repo, installs system packages, all optional Python dependencies, and PROMAPPER itself on any OS:
 
 ```bash
 bash <(curl -s https://raw.githubusercontent.com/ArjunV110/ProMapper/master/install.sh)
 ```
 
-Auto-detects your OS. Works on Linux, macOS, Windows (Git Bash), and Android Termux.
+Works on Linux, macOS, Windows (Git Bash), and Android Termux. Installs everything: scapy, cryptography, paramiko, dnspython, traceroute, whois — zero manual steps.
 
 ---
 
