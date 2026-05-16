@@ -168,7 +168,6 @@ def _build_parser() -> argparse.ArgumentParser:
     g_scan.add_argument("-sL", "--list-scan", action="store_true", help="List targets only")
     g_scan.add_argument("-sn", "--ping-only", action="store_true", help="Ping sweep only")
     g_scan.add_argument("-PR", "--arp-discovery", action="store_true", help="ARP discovery (local)")
-    g_scan.add_argument("-PO", "--protocol-ping", action="store_true", help="Protocol ping")
 
     g_detect = p.add_argument_group("Detection & Enumeration")
     g_detect.add_argument("-sV", "--service-version", action="store_true", help="Service version detection")
@@ -217,7 +216,6 @@ def _build_parser() -> argparse.ArgumentParser:
     g_perf.add_argument("--timeout", type=float, default=2.0, help="Socket timeout")
     g_perf.add_argument("--fragment", action="store_true", help="Fragment packets (needs scapy)")
     g_perf.add_argument("--ttl", type=int, help="Set IP TTL")
-    g_perf.add_argument("--data-length", type=int, help="Append random data to packets")
 
     g_adv = p.add_argument_group("Advanced & Monitoring")
     g_adv.add_argument("-D", "--decoy", help="Decoy IPs (comma-separated)")
