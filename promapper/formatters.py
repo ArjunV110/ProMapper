@@ -280,7 +280,8 @@ def fmt_termux(results: List[HostResult], args) -> str:
     _red = lambda s: f"\033[91m{s}\033[0m" if has_color else s
     _bld = lambda s: f"\033[1m{s}\033[0m" if has_color else s
 
-    lines = [BANNER_ART]
+    lines = [f"  {_bld('PROMAPPER v3.1.0')} — PRO Network Mapper"]
+    lines.append(f"  {'─' * min(W, 40)}")
     lines.append(f"  {_bld('SCAN REPORT')}")
     lines.append(f"  Started:  {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
     lines.append(f"  Targets:  {len(results)} host(s)")
