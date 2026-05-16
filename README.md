@@ -24,13 +24,13 @@ promapper scanme.nmap.org -p 22,80 --banner
 
 ## Super Command
 
-One command to install PROMAPPER **and all dependencies** on any device:
+After installing PROMAPPER normally (see below), run this to install **all optional dependencies** (scapy, cryptography, paramiko, dnspython) and required **system packages** (traceroute, whois, etc.) for advanced features:
 
 ```bash
 bash <(curl -s https://raw.githubusercontent.com/ArjunV110/ProMapper/master/install.sh)
 ```
 
-Auto-detects your OS, installs system packages (Python, traceroute, whois, etc.), and all optional Python dependencies (scapy, cryptography, paramiko, dnspython). Works on Linux, macOS, Windows (Git Bash), and Android Termux.
+Auto-detects your OS. Works on Linux, macOS, Windows (Git Bash), and Android Termux.
 
 ---
 
