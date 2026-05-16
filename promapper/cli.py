@@ -9,6 +9,7 @@ import ipaddress
 import logging
 import os
 import signal
+import subprocess
 import sys
 import threading
 import time
@@ -249,18 +250,27 @@ def main() -> None:
     configure_logging(verbose=args.verbose)
 
     if args.update:
-        import subprocess
         script_dir = os.path.dirname(os.path.abspath(__file__))
         project_dir = os.path.dirname(script_dir)
         git_dir = os.path.join(project_dir, ".git")
         if os.path.isdir(git_dir):
-            print(f"[*] Updating PROMAPPER from GitHub...")
-            res = subprocess.run(["git", "-C", project_dir, "pull", "--ff-only"], capture_output=True, text=True, timeout=30)
-            if res.returncode == 0:
-                print(f"[*] {res.stdout.strip().split(chr(10))[-1]}")
-                print("[*] Update complete. Restart PROMAPPER to use the latest version.")
-            else:
-                print(f"[!] Update failed: {res.stderr.strip()}")
+            print("[*] Updating PROMAPPER from GitHub...")
+            try:
+                res = subprocess.run(
+                    ["git", "-C", project_dir, "pull", "--ff-only"],
+                    capture_output=True, text=True, timeout=30,
+                )
+                if res.returncode == 0:
+                    msg = res.stdout.strip().split("\n")[-1]
+                    print(f"  {msg}")
+                    print("[*] Update complete. Restart to use the latest version.")
+                else:
+                    print(f"[!] Update failed: {res.stderr.strip()}")
+            except FileNotFoundError:
+                print("[!] Git is not installed. Install git or update manually:")
+                print("    git pull")
+            except subprocess.TimeoutExpired:
+                print("[!] Update timed out. Check your internet connection.")
         else:
             print("[!] Not a git repository. Clone the repo first:")
             print("    git clone https://github.com/ArjunV110/ProMapper.git")
