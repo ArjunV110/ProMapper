@@ -152,7 +152,14 @@ def fmt_terminal(results: List[HostResult], args) -> str:
                 st = _grn(pr.state) if pr.state == "open" else _yel(pr.state)
                 sv = _sanitize_text(pr.service or "", 22)[:22]
                 vr = _sanitize_text(pr.version or "", 16)[:16]
-                lines.append(_bx(f"{pr.port:<7} {pr.protocol.upper():<6} {st:<13} {sv:<22} {vr:<16}", W))
+                # Pad each column manually using visible length (ANSI codes are invisible)
+                col_port = f"{pr.port:<7}"
+                col_proto = f"{pr.protocol.upper():<6}"
+                st_vis = _vis_len(st)
+                col_state = f"{st}{' ' * max(0, 13 - st_vis)}"
+                col_svc = f"{sv:<22}"
+                col_ver = f"{vr:<16}"
+                lines.append(_bx(f"{col_port} {col_proto} {col_state} {col_svc} {col_ver}", W))
             lines.append(f"  └{'─' * W}┘")
 
             # Banners and SSL certs displayed below the box as plain text
