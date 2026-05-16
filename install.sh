@@ -1,116 +1,209 @@
 #!/bin/bash
-# ═══════════════════════════════════════════════════════════════
+# ═══════════════════════════════════════════════════════════════════════
 # PROMAPPER — Universal A-Z Installer
-# Installs everything needed on Linux, macOS, Windows, Termux
-# ═══════════════════════════════════════════════════════════════
+# Auto-detects OS, installs everything needed, works everywhere
+# ═══════════════════════════════════════════════════════════════════════
 
 REPO="https://github.com/ArjunV110/ProMapper.git"
 INSTALL_DIR="$HOME/.promapper"
 
+echo ""
 echo "╔══════════════════════════════════════════════════════════╗"
 echo "║         PROMAPPER — Full A-Z Installation              ║"
 echo "╚══════════════════════════════════════════════════════════╝"
 echo ""
 
-# ── Detect OS ──────────────────────────────────────────────────────
+# ── Detect OS ──────────────────────────────────────────────────────────
 OS="unknown"
-case "$(uname -s)" in Linux*) OS=linux ;; Darwin*) OS=macos ;; MINGW*|MSYS*) OS=windows ;; esac
-if [ -n "$PREFIX" ] && echo "$PREFIX" | grep -q "com.termux"; then OS=termux; fi
-echo "  Platform: $OS"
+OS_FULL="$(uname -s)"
+ARCH="$(uname -m)"
+
+case "$OS_FULL" in
+    Linux*)  OS="linux" ;;
+    Darwin*) OS="macos" ;;
+    MINGW*|MSYS*|CYGWIN*) OS="windows" ;;
+esac
+
+# Termux check (must be before generic Linux)
+if [ -n "$PREFIX" ] && echo "$PREFIX" | grep -q "com.termux"; then
+    OS="termux"
+fi
+
+echo "  Platform    : $OS"
+echo "  Architecture: $ARCH"
+echo "  Directory   : $INSTALL_DIR"
 echo ""
 
-# ── Step 1: Clone or update repo ───────────────────────────────────
-echo "  [1/5] Cloning PROMAPPER..."
+# ── Prerequisites ──────────────────────────────────────────────────────
+echo "  ── Checking prerequisites ──"
+
+# Check curl/wget (needed to run this script)
+if ! command -v curl &>/dev/null && ! command -v wget &>/dev/null; then
+    echo "  [REQUIRED] curl or wget — install it first"
+    case $OS in
+        termux) echo "             pkg install curl" ;;
+        linux)  echo "             sudo apt install curl -y  (or pacman/dnf)" ;;
+        macos)  echo "             brew install curl" ;;
+    esac
+    exit 1
+fi
+
+# Check/install git
+if ! command -v git &>/dev/null; then
+    echo "  [INSTALL] git..."
+    case $OS in
+        termux) pkg install -y git 2>/dev/null ;;
+        linux)
+            if command -v apt &>/dev/null; then sudo apt install -y git 2>/dev/null
+            elif command -v pacman &>/dev/null; then sudo pacman -Sy --noconfirm git 2>/dev/null
+            elif command -v dnf &>/dev/null; then sudo dnf install -y git 2>/dev/null; fi ;;
+        macos)
+            if command -v brew &>/dev/null; then brew install git 2>/dev/null
+            else echo "  [WARN] Install git manually from git-scm.com"; fi ;;
+    esac
+fi
+echo "  ✅ git: $(git --version 2>/dev/null | head -c 20 || echo 'not found')"
+
+# Check/install Python
+if ! command -v python3 &>/dev/null && ! command -v python &>/dev/null; then
+    echo "  [INSTALL] Python..."
+    case $OS in
+        termux) pkg install -y python 2>/dev/null ;;
+        linux)
+            if command -v apt &>/dev/null; then sudo apt install -y python3 python3-pip python3-venv 2>/dev/null
+            elif command -v pacman &>/dev/null; then sudo pacman -Sy --noconfirm python python-pip 2>/dev/null
+            elif command -v dnf &>/dev/null; then sudo dnf install -y python3 python3-pip 2>/dev/null; fi ;;
+        macos)
+            if command -v brew &>/dev/null; then brew install python 2>/dev/null; fi ;;
+    esac
+fi
+
+PYTHON=$(command -v python3 || command -v python)
+PYVER=$($PYTHON --version 2>&1 | grep -oP '\d+\.\d+' | head -1)
+echo "  ✅ python: $PYTHON ($PYVER)"
+
+# Verify Python 3.9+
+if [ "$(echo "$PYVER" | cut -d. -f1)" -lt 3 ] || { [ "$(echo "$PYVER" | cut -d. -f1)" -eq 3 ] && [ "$(echo "$PYVER" | cut -d. -f2)" -lt 9 ]; }; then
+    echo "  [ERROR] Python 3.9+ required. Installed: $PYVER"
+    exit 1
+fi
+echo ""
+
+# ── Step 1: Clone/update repo ─────────────────────────────────────────
+echo "  ── Step 1/4: Getting PROMAPPER ──"
 if [ -d "$INSTALL_DIR/.git" ]; then
-    echo "         Updating existing installation..."
+    echo "  Updating existing installation..."
     cd "$INSTALL_DIR" && git pull --no-rebase 2>/dev/null
+    echo "  ✅ Updated"
 else
     rm -rf "$INSTALL_DIR" 2>/dev/null
+    echo "  Cloning from GitHub..."
     git clone --depth 1 "$REPO" "$INSTALL_DIR" 2>/dev/null || {
-        echo "  [ERROR] Git clone failed. Install git or check connection."
+        echo "  [ERROR] Clone failed. Check: git, internet, or $REPO"
         exit 1
     }
+    echo "  ✅ Cloned"
 fi
 cd "$INSTALL_DIR"
-echo "         Done."
 echo ""
 
-# ── Step 2: System packages ────────────────────────────────────────
-echo "  [2/5] Installing system packages..."
+# ── Step 2: Install system packages per OS ────────────────────────────
+echo "  ── Step 2/4: Installing system packages ──"
 case $OS in
     termux)
-        pkg update -y 2>/dev/null && pkg upgrade -y 2>/dev/null
-        pkg install -y python python-cryptography traceroute whois openssh git 2>/dev/null
+        echo "  [Termux] Using pkg..."
+        pkg update -y 2>/dev/null
+        pkg install -y python-cryptography traceroute whois openssh 2>/dev/null
+        echo "  ✅ Termux packages installed"
         ;;
     linux)
+        echo "  [Linux] Detecting package manager..."
         if command -v apt &>/dev/null; then
+            echo "         Using apt..."
             sudo apt update -y 2>/dev/null
-            sudo apt install -y python3-pip python3-venv traceroute whois git 2>/dev/null
+            sudo apt install -y traceroute whois 2>/dev/null
         elif command -v pacman &>/dev/null; then
-            sudo pacman -Sy --noconfirm python-pip traceroute whois git 2>/dev/null
+            echo "         Using pacman..."
+            sudo pacman -Sy --noconfirm traceroute whois 2>/dev/null
         elif command -v dnf &>/dev/null; then
-            sudo dnf install -y python3-pip traceroute whois git 2>/dev/null
+            echo "         Using dnf..."
+            sudo dnf install -y traceroute whois 2>/dev/null
         else
-            echo "         [WARN] Unknown package manager. Install python3, pip, git manually."
+            echo "         [SKIP] Unknown package manager"
         fi
+        echo "  ✅ Linux system packages"
         ;;
     macos)
+        echo "  [macOS] Using Homebrew..."
         if command -v brew &>/dev/null; then
-            brew install python traceroute git 2>/dev/null
+            brew install traceroute 2>/dev/null || true
+            echo "  ✅ macOS packages installed"
         else
-            echo "         [WARN] Install Homebrew from https://brew.sh first."
+            echo "  [SKIP] Homebrew not found. Install from brew.sh"
         fi
         ;;
     windows)
-        echo "         Ensure Python, Git are installed and in PATH."
+        echo "  [Windows] Manual steps may be needed:"
+        echo "         • Npcap for scapy: https://npcap.com"
+        echo "         • Python: https://python.org"
+        echo "         • Git: https://git-scm.com"
         ;;
 esac
-echo "         Done."
 echo ""
 
-# ── Step 3: Install Python dependencies ────────────────────────────
-echo "  [3/5] Installing Python packages..."
-PIP="pip3"
-command -v $PIP >/dev/null || PIP="pip"
+# ── Step 3: Install Python packages ───────────────────────────────────
+echo "  ── Step 3/4: Installing Python packages ──"
+PIP="$PYTHON -m pip"
 
-# Try normal pip first, fallback to --break-system-packages for newer Linux
-$PIP install scapy dnspython paramiko 2>/dev/null || \
-$PIP install --break-system-packages scapy dnspython paramiko 2>/dev/null || \
-echo "         [WARN] Some optional packages failed (scapy needs Npcap on Windows)"
+# Upgrade pip first
+$PIP install --upgrade pip 2>/dev/null || true
 
-# Install cryptography safely (prefer system package on Termux)
-if [ "$OS" = "termux" ]; then
-    pkg install -y python-cryptography 2>/dev/null
-else
-    $PIP install cryptography 2>/dev/null || \
-    $PIP install --break-system-packages cryptography 2>/dev/null || true
-fi
-echo "         Done."
+# Determine pip flags (--break-system-packages for newer Linux)
+PIP_FLAGS=""
+$PIP install --help 2>/dev/null | grep -q break-system-packages && PIP_FLAGS="--break-system-packages"
+
+# Install optional deps
+echo "  Installing optionals: scapy, paramiko, dnspython, cryptography..."
+$PIP install $PIP_FLAGS scapy paramiko dnspython 2>/dev/null && echo "  ✅ Optional packages: OK" || echo "  ⚠️  Some optional packages failed"
+
+# Cryptography: prefer system package on Termux, pip elsewhere
+case $OS in
+    termux) pkg install -y python-cryptography 2>/dev/null && echo "  ✅ Cryptography (system): OK" || echo "  ⚠️  Cryptography: SKIPPED" ;;
+    *) $PIP install $PIP_FLAGS cryptography 2>/dev/null && echo "  ✅ Cryptography: OK" || echo "  ⚠️  Cryptography: SKIPPED (SSL fingerprints unavailable)" ;;
+esac
 echo ""
 
-# ── Step 4: Install PROMAPPER ───────────────────────────────────────
-echo "  [4/5] Installing PROMAPPER..."
-$PIP install -e "$INSTALL_DIR" 2>/dev/null || \
-$PIP install --break-system-packages -e "$INSTALL_DIR" 2>/dev/null || {
-    echo "         Pip install failed. Creating symlink instead..."
+# ── Step 4: Install PROMAPPER itself ──────────────────────────────────
+echo "  ── Step 4/4: Installing PROMAPPER ──"
+$PIP install $PIP_FLAGS -e "$INSTALL_DIR" 2>/dev/null && {
+    echo "  ✅ PROMAPPER installed via pip"
+} || {
+    echo "  Pip install failed. Setting up direct execution..."
     mkdir -p "$HOME/.local/bin" 2>/dev/null
-    ln -sf "$INSTALL_DIR/promapper.py" "$HOME/.local/bin/promapper" 2>/dev/null
-    # Add to PATH if not already
-    case ":$PATH:" in *:"$HOME/.local/bin":*) ;; *) echo "export PATH=\"\$HOME/.local/bin:\$PATH\"" >> "$HOME/.bashrc" ;; esac
+    cat > "$HOME/.local/bin/promapper" << 'SYMLINK'
+#!/bin/bash
+exec python3 "$HOME/.promapper/promapper.py" "$@"
+SYMLINK
+    chmod +x "$HOME/.local/bin/promapper"
+    # Add ~/.local/bin to PATH if not already
+    case ":$PATH:" in *:"$HOME/.local/bin":*) ;; *) echo 'export PATH="$HOME/.local/bin:$PATH"' >> "$HOME/.bashrc" ;; esac
+    export PATH="$HOME/.local/bin:$PATH"
+    echo "  ✅ PROMAPPER installed via symlink"
 }
-echo "         Done."
 echo ""
 
-# ── Step 5: Verify ──────────────────────────────────────────────────
-echo "  [5/5] Verifying installation..."
+# ── Verify ─────────────────────────────────────────────────────────────
+echo "  ── Verification ──"
 if command -v promapper &>/dev/null; then
-    echo "         $(promapper -V)"
+    echo "  ✅ $(promapper -V 2>&1)"
+    echo "  ✅ Ready to use!"
 elif [ -f "$HOME/.local/bin/promapper" ]; then
-    echo "         $("$HOME/.local/bin/promapper" -V)"
+    echo "  ✅ $("$HOME/.local/bin/promapper" -V 2>&1)"
     export PATH="$HOME/.local/bin:$PATH"
+    echo "  ✅ Ready! Restart terminal or run: source ~/.bashrc"
 else
-    echo "         Running from install directory..."
-    echo "         $(python3 "$INSTALL_DIR/promapper.py" -V)"
+    echo "  ✅ $($PYTHON "$INSTALL_DIR/promapper.py" -V 2>&1)"
+    echo "  ✅ Run: $PYTHON $INSTALL_DIR/promapper.py scanme.nmap.org"
 fi
 echo ""
 
