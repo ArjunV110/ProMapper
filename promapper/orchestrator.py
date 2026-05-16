@@ -28,7 +28,7 @@ from promapper.brute import brute_force
 
 logger = logging.getLogger(__name__)
 
-if HAS_SCAPY and not IS_TERMUX:
+if HAS_SCAPY:
     try:
         from scapy.all import Ether, ARP, sr1
     except ImportError:
@@ -118,7 +118,7 @@ def scan_host(entry: Tuple[str, str], args: argparse.Namespace) -> HostResult:
     result.latency_ms = measure_latency(ip)
 
     # Stage 2: ARP (local)
-    if HAS_SCAPY and not IS_TERMUX:
+    if HAS_SCAPY:
         try:
             ans = sr1(Ether(dst="ff:ff:ff:ff:ff:ff") / ARP(pdst=ip), timeout=1, verbose=0)
             if ans and ans.haslayer(ARP):

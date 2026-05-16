@@ -406,7 +406,7 @@ def ping_sweep(host: str, timeout_val: Optional[float] = None) -> bool:
 
 
 def icmp_ping(host: str, timeout_val: Optional[float] = None) -> bool:
-    if HAS_SCAPY and not IS_TERMUX:
+    if HAS_SCAPY:
         try:
             ans = sr1(IP(dst=host) / ICMP(),
                       timeout=timeout_val or cfg().timeout, verbose=0)
@@ -429,7 +429,7 @@ def _traceroute_cmd(host: str, timeout_val: float) -> List[str]:
 def traceroute(host: str, max_hops: int = 30, timeout_val: Optional[float] = None) -> List[Dict[str, Any]]:
     hops: List[Dict[str, Any]] = []
     t = timeout_val or cfg().timeout
-    if HAS_SCAPY and not IS_TERMUX:
+    if HAS_SCAPY:
         for ttl in range(1, max_hops + 1):
             try:
                 pkt = IP(dst=host, ttl=ttl) / ICMP()

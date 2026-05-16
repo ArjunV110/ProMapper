@@ -29,9 +29,8 @@ IS_TERMUX: bool = IS_LINUX and (
 # ── Optional import detection (flags set at module load) ─────────────────
 HAS_SCAPY: bool = False
 try:
-    if not IS_TERMUX:
-        from scapy.all import IP, TCP, UDP, ICMP, Ether, ARP, sr1, sr  # type: ignore
-        HAS_SCAPY = True
+    from scapy.all import IP, TCP, UDP, ICMP, Ether, ARP, sr1, sr  # type: ignore
+    HAS_SCAPY = True
 except ImportError:
     pass
 

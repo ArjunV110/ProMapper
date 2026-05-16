@@ -23,7 +23,7 @@ from promapper.scanner import resolve_host
 
 logger = logging.getLogger(__name__)
 
-if HAS_SCAPY and not IS_TERMUX:
+if HAS_SCAPY:
     try:
         from scapy.all import IP, TCP, ICMP, sr1
     except ImportError:
@@ -101,7 +101,7 @@ OS_SIGNATURES: List[Dict[str, Any]] = [
 def guess_os(ip: str, timeout_val: Optional[float] = None) -> Dict[str, Any]:
     result: Dict[str, Any] = {"name": "Unknown", "accuracy": 0.0, "ttl": 0, "window": 0}
     ttl = 0
-    if not HAS_SCAPY or IS_TERMUX:
+    if not HAS_SCAPY:
         try:
             res = subprocess.run(_ping_cmd() + [ip], capture_output=True, timeout=3)
             m = TTL_RE.search(res.stdout)
