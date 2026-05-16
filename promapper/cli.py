@@ -232,6 +232,7 @@ def _build_parser() -> argparse.ArgumentParser:
     g_adv.add_argument("--diff", action="store_true", help="Diff mode (changes only)")
     g_adv.add_argument("--notify", action="store_true", help="Notify on changes")
     g_adv.add_argument("--interactive", action="store_true", help="Interactive mode")
+    g_adv.add_argument("--update", action="store_true", help="Update PROMAPPER to latest version via git")
     return p
 
 
@@ -246,6 +247,24 @@ def main() -> None:
     config = ScanConfig.from_args(args)
     cfg_set(config)
     configure_logging(verbose=args.verbose)
+
+    if args.update:
+        import subprocess
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        project_dir = os.path.dirname(script_dir)
+        git_dir = os.path.join(project_dir, ".git")
+        if os.path.isdir(git_dir):
+            print(f"[*] Updating PROMAPPER from GitHub...")
+            res = subprocess.run(["git", "-C", project_dir, "pull", "--ff-only"], capture_output=True, text=True, timeout=30)
+            if res.returncode == 0:
+                print(f"[*] {res.stdout.strip().split(chr(10))[-1]}")
+                print("[*] Update complete. Restart PROMAPPER to use the latest version.")
+            else:
+                print(f"[!] Update failed: {res.stderr.strip()}")
+        else:
+            print("[!] Not a git repository. Clone the repo first:")
+            print("    git clone https://github.com/ArjunV110/ProMapper.git")
+        sys.exit(0)
 
     raw_targets = _parse_targets(args)
     if not raw_targets:
