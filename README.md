@@ -46,7 +46,7 @@ python3 promapper.py 192.168.1.1 -p 1-65535 --banner --os-guess -oJ scan.json --
 ### From Source (recommended)
 
 ```bash
-git clone https://github.com/anomalyco/promapper.git
+git clone https://github.com/ArjunV110/ProMapper.git
 cd promapper
 pip install -e .
 ```
@@ -54,7 +54,7 @@ pip install -e .
 ### Direct (no install)
 
 ```bash
-git clone https://github.com/anomalyco/promapper.git
+git clone https://github.com/ArjunV110/ProMapper.git
 cd promapper
 python3 promapper.py scanme.nmap.org
 ```
