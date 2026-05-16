@@ -233,7 +233,8 @@ def _build_parser() -> argparse.ArgumentParser:
 
 def main() -> None:
     signal.signal(signal.SIGINT, _signal_handler)
-    signal.signal(signal.SIGTERM, _signal_handler)
+    if hasattr(signal, 'SIGTERM'):
+        signal.signal(signal.SIGTERM, _signal_handler)
 
     parser = _build_parser()
     args = parser.parse_args()
