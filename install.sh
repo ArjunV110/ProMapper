@@ -180,10 +180,22 @@ $PIP install $PIP_FLAGS -e "$INSTALL_DIR" 2>/dev/null && {
 } || {
     echo "  Pip install failed. Setting up direct execution..."
     mkdir -p "$HOME/.local/bin" 2>/dev/null
-    cat > "$HOME/.local/bin/promapper" << 'SYMLINK'
-#!/bin/bash
-exec python3 "$HOME/.promapper/promapper.py" "$@"
-SYMLINK
+    cat > "$HOME/.local/bin/promapper" << 'ENTRY'
+#!/usr/bin/python3
+import sys, os
+
+_script = os.path.abspath(__file__)
+_home = os.path.dirname(os.path.dirname(os.path.dirname(_script)))
+_pkg = os.path.join(_home, '.promapper')
+if os.path.isdir(_pkg) and _pkg not in sys.path:
+    sys.path.insert(0, _pkg)
+
+from promapper.cli import main
+
+if __name__ == '__main__':
+    sys.argv[0] = sys.argv[0].removesuffix('.exe')
+    sys.exit(main())
+ENTRY
     chmod +x "$HOME/.local/bin/promapper"
     # Add ~/.local/bin to PATH if not already
     case ":$PATH:" in *:"$HOME/.local/bin":*) ;; *) echo 'export PATH="$HOME/.local/bin:$PATH"' >> "$HOME/.bashrc" ;; esac

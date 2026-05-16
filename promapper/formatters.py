@@ -13,7 +13,7 @@ import xml.etree.ElementTree as ET
 from dataclasses import asdict
 from typing import Dict, List, Optional, Tuple
 
-from promapper.config import BOX_WIDTH, _supports_color, BANNER_ART
+from promapper.config import BOX_WIDTH, _supports_color
 from promapper.datatypes import HostResult, PortResult
 
 _ansi_strip: re.Pattern = re.compile(r'\033\[[0-9;]*m')
@@ -69,7 +69,7 @@ def _bx(s: str, w: int = BOX_WIDTH) -> str:
 
 # ── Terminal Formatter ───────────────────────────────────────────────────
 def fmt_terminal(results: List[HostResult], args) -> str:
-    lines: List[str] = [BANNER_ART]
+    lines: List[str] = []
     has_color = _supports_color()
     _grn = lambda s: f"\033[92m{s}\033[0m" if has_color else s
     _cya = lambda s: f"\033[96m{s}\033[0m" if has_color else s
@@ -170,9 +170,28 @@ def fmt_terminal(results: List[HostResult], args) -> str:
                     banner_text = _sanitize_text(pr.banner, 200)
                     lines.append(f"    {_cya('Banner')} ({pr.port}/{pr.protocol}): {banner_text}")
                 if pr.ssl_cert and args.ssl_cert:
-                    cn = _sanitize_text(pr.ssl_cert.get("subject", {}).get("commonName", "") or pr.ssl_cert.get("subject", {}).get("CN") or "", 40)
-                    exp = _sanitize_text(pr.ssl_cert.get("notAfter", "") or "", 20)
-                    lines.append(f"    {_cya('SSL')} ({pr.port}/{pr.protocol}): {cn}  (exp: {exp})")
+                    sc = pr.ssl_cert
+                    cn = _sanitize_text(sc.get("subject", {}).get("commonName", "") or sc.get("subject", {}).get("CN") or "", 40)
+                    org = _sanitize_text(sc.get("subject", {}).get("organizationName", "") or "", 40)
+                    iss = _sanitize_text(sc.get("issuer", {}).get("commonName", "") or sc.get("issuer", {}).get("organizationName", "") or "", 40)
+                    nb = _sanitize_text(sc.get("notBefore", "") or "", 20)
+                    na = _sanitize_text(sc.get("notAfter", "") or "", 20)
+                    san_list = sc.get("subjectAltName", [])
+                    san_str = ", ".join(san_list[:3])
+                    if len(san_list) > 3:
+                        san_str += f" (+{len(san_list) - 3} more)"
+                    fp = _sanitize_text(sc.get("fingerprint_sha256", "") or "", 20)
+                    serial = _sanitize_text(sc.get("serial", "") or "", 20)
+                    lines.append(f"    {_cya('SSL Cert')} ({pr.port}/{pr.protocol}):")
+                    lines.append(f"      Subject:  {cn}")
+                    if org:
+                        lines.append(f"      Org:      {org}")
+                    lines.append(f"      Issuer:   {iss}")
+                    lines.append(f"      Valid:    {nb} — {na}")
+                    if san_str:
+                        lines.append(f"      SAN:      {san_str}")
+                    if fp:
+                        lines.append(f"      SHA256:   {fp}")
             lines.append("")
 
         # ── Web Analysis ────────────────────────────────────────────────
@@ -321,9 +340,17 @@ def fmt_termux(results: List[HostResult], args) -> str:
                 if pr.banner and args.banner:
                     lines.append(f"      Banner: {_sanitize_text(pr.banner, 200)}")
                 if pr.ssl_cert and args.ssl_cert:
-                    cn = _sanitize_text(pr.ssl_cert.get("subject",{}).get("commonName","") or "", 30)
-                    exp = _sanitize_text(pr.ssl_cert.get("notAfter","") or "", 15)
-                    lines.append(f"      SSL: {cn}  (exp: {exp})")
+                    sc = pr.ssl_cert
+                    cn = _sanitize_text(sc.get("subject",{}).get("commonName","") or "", 30)
+                    iss = _sanitize_text(sc.get("issuer",{}).get("commonName","") or sc.get("issuer",{}).get("organizationName","") or "", 30)
+                    na = _sanitize_text(sc.get("notAfter","") or "", 15)
+                    san_list = sc.get("subjectAltName", [])
+                    san_str = ", ".join(san_list[:2])
+                    if len(san_list) > 2:
+                        san_str += f" (+{len(san_list) - 2})"
+                    lines.append(f"      SSL: {cn}  (iss: {iss}, exp: {na})")
+                    if san_str:
+                        lines.append(f"      SAN: {san_str}")
 
         if res.http_tech:
             for name, cat in res.http_tech.items():

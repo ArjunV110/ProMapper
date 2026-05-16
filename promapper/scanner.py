@@ -4,7 +4,6 @@ Core scanning engine — DNS resolution, port scanning, ping, traceroute, banner
 from __future__ import annotations
 
 import datetime
-import hashlib
 import ipaddress
 import logging
 import os
@@ -37,6 +36,7 @@ if HAS_CRYPTO:
     try:
         from cryptography import x509
         from cryptography.hazmat.backends import default_backend
+        from cryptography.hazmat.primitives import hashes
     except ImportError:
         pass
 try:
@@ -429,6 +429,8 @@ def _traceroute_cmd(host: str, timeout_val: float) -> List[str]:
 def traceroute(host: str, max_hops: int = 30, timeout_val: Optional[float] = None) -> List[Dict[str, Any]]:
     hops: List[Dict[str, Any]] = []
     t = timeout_val or cfg().timeout
+
+    # Try Scapy-based traceroute first (raw ICMP, needs root)
     if HAS_SCAPY:
         for ttl in range(1, max_hops + 1):
             try:
@@ -444,14 +446,28 @@ def traceroute(host: str, max_hops: int = 30, timeout_val: Optional[float] = Non
                     hops.append({"hop": ttl, "ip": "*", "rtt_ms": 0})
             except Exception:
                 hops.append({"hop": ttl, "ip": "*", "rtt_ms": 0})
-    else:
+        # If every hop failed, fall back to system traceroute
+        if hops and all(h["ip"] == "*" for h in hops):
+            hops = []
+
+    # Fall back to system traceroute (UDP on Linux, ICMP on macOS, ICMP on Windows)
+    if not hops:
         try:
             res = subprocess.run(_traceroute_cmd(host, t), capture_output=True, text=True, timeout=t * max_hops)
             for line in res.stdout.split("\n"):
                 m = TRACEROUTE_RE.match(line)
                 if m:
                     ip_str = m.group(2) if m.group(2) != '*' else '*'
-                    hops.append({"hop": int(m.group(1)), "ip": ip_str, "rtt_ms": 0})
+                    rtt = 0.0
+                    if ip_str != '*':
+                        rest = line[m.end():].strip()
+                        rtt_m = re.search(r'([\d.]+)\s*ms', rest, re.IGNORECASE)
+                        if rtt_m:
+                            try:
+                                rtt = round(float(rtt_m.group(1)), 2)
+                            except ValueError:
+                                pass
+                    hops.append({"hop": int(m.group(1)), "ip": ip_str, "rtt_ms": rtt})
         except (subprocess.TimeoutExpired, FileNotFoundError, OSError):
             pass
     return hops
@@ -535,8 +551,34 @@ def get_ssl_cert(host: str, port: int, timeout_val: Optional[float] = None) -> D
                         der = ssock.getpeercert(binary_form=True)
                         if der:
                             crt = x509.load_der_x509_certificate(der, default_backend())
-                            cert_info["fingerprint_sha256"] = crt.fingerprint(hashlib.sha256).hex()
-                            cert_info["fingerprint_sha1"] = crt.fingerprint(hashlib.sha1).hex()
+                            cert_info["fingerprint_sha256"] = crt.fingerprint(hashes.SHA256()).hex()
+                            cert_info["fingerprint_sha1"] = crt.fingerprint(hashes.SHA1()).hex()
+                            if not cert:
+                                try:
+                                    cn = crt.subject.get_attributes_for_oid(x509.oid.NameOID.COMMON_NAME)
+                                    org = crt.subject.get_attributes_for_oid(x509.oid.NameOID.ORGANIZATION_NAME)
+                                    cert_info["subject"] = {}
+                                    if cn: cert_info["subject"]["commonName"] = cn[0].value
+                                    if org: cert_info["subject"]["organizationName"] = org[0].value
+                                except Exception:
+                                    cert_info["subject"] = {}
+                                try:
+                                    icn = crt.issuer.get_attributes_for_oid(x509.oid.NameOID.COMMON_NAME)
+                                    iorg = crt.issuer.get_attributes_for_oid(x509.oid.NameOID.ORGANIZATION_NAME)
+                                    cert_info["issuer"] = {}
+                                    if icn: cert_info["issuer"]["commonName"] = icn[0].value
+                                    if iorg: cert_info["issuer"]["organizationName"] = iorg[0].value
+                                except Exception:
+                                    cert_info["issuer"] = {}
+                                cert_info["version"] = str(crt.version.value)
+                                cert_info["serial"] = str(crt.serial_number)
+                                cert_info["notBefore"] = str(crt.not_valid_before_utc)
+                                cert_info["notAfter"] = str(crt.not_valid_after_utc)
+                                try:
+                                    san_ext = crt.extensions.get_extension_for_oid(x509.oid.ExtensionOID.SUBJECT_ALTERNATIVE_NAME)
+                                    cert_info["subjectAltName"] = [str(s.value) for s in san_ext.value]
+                                except Exception:
+                                    cert_info["subjectAltName"] = []
                     except Exception:
                         logger.debug("SSL fingerprint error on %s:%d", host, port)
     except (socket.timeout, ConnectionRefusedError, OSError) as e:

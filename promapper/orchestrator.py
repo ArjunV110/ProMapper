@@ -161,6 +161,15 @@ def scan_host(entry: Tuple[str, str], args: argparse.Namespace) -> HostResult:
     host_cves = _stage_enrich_ports(ip, port_results, args, timeout_val)
     result.cves = host_cves
 
+    # Stage 5b: SSL cert (try on SSL ports even if scan reported filtered)
+    if args.ssl_cert:
+        for sp in sorted(p for p in SSL_PORTS if p in ports):
+            if not any(pr.port == sp for pr in result.ports):
+                cert_info = get_ssl_cert(ip, sp, timeout_val)
+                if cert_info:
+                    result.ports.append(PortResult(port=sp, state="open", protocol="tcp", service="https", ssl_cert=cert_info))
+                    result.open_tcp.append(sp)
+
     # Stage 6: SSH key
     if args.ssh_key and 22 in result.open_tcp:
         ssh_banner = extract_ssh_key(ip, 22, timeout_val)

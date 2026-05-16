@@ -19,7 +19,7 @@ from typing import List, Tuple
 from promapper import __version__
 from promapper.config import (
     ScanConfig, cfg, cfg_set, configure_logging,
-    MAX_GLOBAL_THREADS, BANNER_ART, IS_TERMUX, HAS_SCAPY,
+    MAX_GLOBAL_THREADS, BANNER_ART, IS_WINDOWS, IS_TERMUX, HAS_SCAPY,
     INVALID_PATH, _is_valid_target,
 )
 from promapper.datatypes import HostResult
@@ -146,11 +146,6 @@ def _build_parser() -> argparse.ArgumentParser:
         description="PRO Network Mapper — cross-platform",
         epilog="""Examples:
   promapper scanme.nmap.org
-  promapper 192.168.1.0/24 -p 1-1024 -O -sV --geo
-  promapper example.com -p 80,443 --http-tech --dir-bust --ssl-cert
-  promapper target.com --brute ssh,ftp --user admin -P wordlist.txt
-  promapper 10.0.0.1 --continuous --diff --html report.html
-  promapper targets.txt -p 22 --ssh-key --os-guess
 """,
     )
     p.add_argument("-V", "--version", action="version", version=f"promapper {__version__}",
@@ -308,6 +303,15 @@ def main() -> None:
         else:
             print(_fmt(arp_results, args))
         sys.exit(0)
+
+    scapy_flags = {
+        "syn": "-sS/--syn", "fin": "-sF/--fin", "null": "-sN/--null",
+        "xmas": "-sX/--xmas", "ack": "-sA/--ack", "window": "-sW/--window",
+        "maimon": "-sM/--maimon",
+    }
+    active_scapy = [name for flag, name in scapy_flags.items() if getattr(args, flag, False)]
+    if active_scapy and not IS_WINDOWS and not IS_TERMUX and os.geteuid() != 0:
+        print(f"[!] Warning: {'/'.join(active_scapy)} require{'s' if len(active_scapy) == 1 else ''} root (sudo) for raw packets — falling back to connect() scan")
 
     is_batch = any([args.output_json, args.output_xml, args.html])
     if not is_batch:
