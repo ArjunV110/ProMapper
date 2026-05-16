@@ -22,32 +22,13 @@ promapper scanme.nmap.org -p 22,80 --banner
 | **Monitoring** | Continuous scans, diff detection, desktop notifications |
 | **Cross-platform** | Linux, macOS, Windows, Termux |
 
-## Quick Start
-
-```bash
-# Basic scan
-python3 promapper.py scanme.nmap.org
-
-# Port range + OS detection + service version
-python3 promapper.py 192.168.1.0/24 -p 1-1024 -O -sV --geo
-
-# Web application audit
-python3 promapper.py example.com -p 80,443 --http-tech --dir-bust --ssl-cert
-
-# Continuous monitoring with change detection
-python3 promapper.py 10.0.0.1 --continuous --diff --notify
-
-# Full router scan with output
-python3 promapper.py 192.168.1.1 -p 1-65535 --banner --os-guess -oJ scan.json --html report.html
-```
-
 ## Installation
 
 ### From Source (recommended)
 
 ```bash
 git clone https://github.com/ArjunV110/ProMapper.git
-cd promapper
+cd ProMapper
 pip install -e .
 ```
 
@@ -55,7 +36,7 @@ pip install -e .
 
 ```bash
 git clone https://github.com/ArjunV110/ProMapper.git
-cd promapper
+cd ProMapper
 python3 promapper.py scanme.nmap.org
 ```
 
