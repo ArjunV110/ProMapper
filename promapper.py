@@ -6,7 +6,7 @@ Usage: promapper <target> [options]
 Cross-platform: Linux, macOS, Windows, Android Termux.
 
 Examples:
-  promapper scanme.nmap.org -p 22,80 --banner
+  promapper scanme.pmapper.org -p 22,80 --banner
   promapper 192.168.1.0/24 -p 1-1024 -O -sV --geo
   promapper example.com -p 80,443 --http-tech --dir-bust --ssl-cert
   promapper target.com --brute ssh,ftp --user admin -P wordlist.txt
