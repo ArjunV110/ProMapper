@@ -1,17 +1,17 @@
 #!/usr/bin/env python3
 """
-promapper — PRO-grade cross-platform network scanner.
-Usage: python3 promapper.py <target> [options]
+PROMAPPER — PRO Network Mapper.
+Usage: promapper <target> [options]
 
 Cross-platform: Linux, macOS, Windows, Android Termux.
 
 Examples:
-  python3 promapper.py scanme.nmap.org -p 22,80 --banner
-  python3 promapper.py 192.168.1.0/24 -p 1-1024 -O -sV --geo
-  python3 promapper.py example.com -p 80,443 --http-tech --dir-bust --ssl-cert
-  python3 promapper.py target.com --brute ssh,ftp --user admin -P wordlist.txt
-  python3 promapper.py 10.0.0.1 --continuous --diff --html report.html
-  python3 promapper.py targets.txt -p 22 --ssh-key --os-guess
+  promapper scanme.nmap.org -p 22,80 --banner
+  promapper 192.168.1.0/24 -p 1-1024 -O -sV --geo
+  promapper example.com -p 80,443 --http-tech --dir-bust --ssl-cert
+  promapper target.com --brute ssh,ftp --user admin -P wordlist.txt
+  promapper 10.0.0.1 --continuous --diff --html report.html
+  promapper targets.txt -p 22 --ssh-key --os-guess
 """
 from __future__ import annotations
 

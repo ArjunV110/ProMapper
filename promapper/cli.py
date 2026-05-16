@@ -136,12 +136,12 @@ def _build_parser() -> argparse.ArgumentParser:
         formatter_class=argparse.RawDescriptionHelpFormatter,
         description="PRO Network Mapper — cross-platform",
         epilog="""Examples:
-  python promapper.py scanme.nmap.org
-  python promapper.py 192.168.1.0/24 -p 1-1024 -O -sV --geo
-  python promapper.py example.com -p 80,443 --http-tech --dir-bust --ssl-cert
-  python promapper.py target.com --brute ssh,ftp --user admin -P wordlist.txt
-  python promapper.py 10.0.0.1 --continuous --diff --html report.html
-  python promapper.py targets.txt -p 22 --ssh-key --os-guess
+  promapper scanme.nmap.org
+  promapper 192.168.1.0/24 -p 1-1024 -O -sV --geo
+  promapper example.com -p 80,443 --http-tech --dir-bust --ssl-cert
+  promapper target.com --brute ssh,ftp --user admin -P wordlist.txt
+  promapper 10.0.0.1 --continuous --diff --html report.html
+  promapper targets.txt -p 22 --ssh-key --os-guess
 """,
     )
     p.add_argument("-V", "--version", action="version", version=f"promapper {__version__}",

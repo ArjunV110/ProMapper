@@ -37,7 +37,7 @@ pip install -e .
 ```bash
 git clone https://github.com/ArjunV110/ProMapper.git
 cd ProMapper
-python3 promapper.py scanme.nmap.org
+promapper scanme.nmap.org
 ```
 
 ### Optional Dependencies
@@ -53,7 +53,7 @@ pip install promapper[dnspython]  # Custom DNS resolver
 ## Usage
 
 ```
-python3 promapper.py <target> [options]
+promapper <target> [options]
 ```
 
 ### Target Specification
