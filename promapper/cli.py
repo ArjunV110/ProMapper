@@ -26,8 +26,14 @@ from promapper.orchestrator import scan_host
 from promapper.scanner import expand_targets, arp_discovery, parse_ports
 from promapper.lookup import lookup_mac_vendor
 from promapper.formatters import (
-    fmt_terminal, fmt_json, fmt_xml, fmt_csv, fmt_grepable, fmt_html,
+    fmt_terminal, fmt_termux, fmt_json, fmt_xml, fmt_csv, fmt_grepable, fmt_html,
 )
+
+# Auto-select formatter based on platform
+if IS_TERMUX:
+    _fmt = fmt_termux
+else:
+    _fmt = fmt_terminal
 from promapper.state import load_state, save_state, diff_results, send_notification
 
 logger = logging.getLogger(__name__)
@@ -269,7 +275,7 @@ def main() -> None:
         if not arp_results:
             logger.error("No hosts discovered via ARP")
         else:
-            print(fmt_terminal(arp_results, args))
+            print(_fmt(arp_results, args))
         sys.exit(0)
 
     is_batch = any([args.output_json, args.output_xml, args.html])
@@ -317,7 +323,7 @@ def main() -> None:
                     send_notification("promapper", f"{len(changes)} change(s) detected")
             save_state(results)
 
-        output_text = fmt_terminal(results, args)
+        output_text = _fmt(results, args)
         _write_outputs(results, args, output_text)
 
         if not args.continuous:

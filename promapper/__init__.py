@@ -10,5 +10,5 @@ __license__ = "MIT"
 from promapper.config import ScanConfig, cfg, cfg_set
 from promapper.datatypes import PortResult, HostResult
 from promapper.formatters import (
-    fmt_terminal, fmt_json, fmt_xml, fmt_csv, fmt_grepable, fmt_html,
+    fmt_terminal, fmt_termux, fmt_json, fmt_xml, fmt_csv, fmt_grepable, fmt_html,
 )

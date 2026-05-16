@@ -267,6 +267,151 @@ def fmt_terminal(results: List[HostResult], args) -> str:
     return "\n".join(lines)
 
 
+# ── Termux (phone-friendly, no box-drawing characters) ─────────────────────
+def fmt_termux(results: List[HostResult], args) -> str:
+    import shutil
+    tw = min(shutil.get_terminal_size().columns, 80) - 2  # usable width
+    W = max(tw, 40)
+    sep = '─' * W
+    has_color = _supports_color()
+    _grn = lambda s: f"\033[92m{s}\033[0m" if has_color else s
+    _cya = lambda s: f"\033[96m{s}\033[0m" if has_color else s
+    _yel = lambda s: f"\033[93m{s}\033[0m" if has_color else s
+    _red = lambda s: f"\033[91m{s}\033[0m" if has_color else s
+    _bld = lambda s: f"\033[1m{s}\033[0m" if has_color else s
+
+    lines = [BANNER_ART]
+    lines.append(f"  {_bld('SCAN REPORT')}")
+    lines.append(f"  Started:  {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+    lines.append(f"  Targets:  {len(results)} host(s)")
+    lines.append(f"  {sep}")
+    lines.append("")
+
+    for idx, res in enumerate(results, 1):
+        if not res.up:
+            lines.append(f"  {_red('●')} HOST #{idx}: {_sanitize_text(res.host, 30)} — {_red('down')}")
+            lines.append("")
+            continue
+
+        tags = []
+        if res.os_guess: tags.append(f"OS:{res.os_guess}")
+        if res.cdn: tags.append(f"CDN:{res.cdn}")
+        if res.cloud: tags.append(f"Cloud:{res.cloud}")
+        if res.waf: tags.append(f"WAF:{res.waf}")
+        tag_str = f"  [{', '.join(tags)}]" if tags else ""
+
+        lines.append(f"  {_grn('●')} {_bld(res.host)}  {res.ip}  {res.latency_ms:.1f}ms{tag_str}")
+        if res.reverse_dns:
+            lines.append(f"    DNS: {res.reverse_dns}")
+        if res.mac:
+            lines.append(f"    MAC: {res.mac}  ({res.mac_vendor})")
+        lines.append("")
+
+        # Host Overview
+        lines.append(f"  {_bld('Host')}")
+        lines.append(f"    Hostname:  {res.host}")
+        lines.append(f"    IP:        {res.ip}")
+        if res.reverse_dns:
+            lines.append(f"    DNS:       {res.reverse_dns}")
+        if res.mac:
+            lines.append(f"    MAC:       {res.mac}  ({res.mac_vendor})")
+        lines.append(f"    Latency:   {res.latency_ms:.1f} ms")
+        if res.os_guess:
+            lines.append(f"    OS:        {res.os_guess} (acc: {res.os_accuracy:.0f}%)")
+        for k in ("cdn", "cloud", "waf", "honeypot"):
+            v = getattr(res, k, "")
+            if v:
+                lines.append(f"    {k.title():10} {v}")
+        lines.append("")
+
+        # Open Ports
+        if res.ports:
+            lines.append(f"  {_bld('Open Ports')}")
+            lines.append(f"    {'PORT':<7} {'PROTO':<6} {'STATE':<12} {'SERVICE':<{min(W-30,20)}} {'VERSION'}")
+            lines.append(f"    {'─'*7} {'─'*6} {'─'*10} {'─'*min(W-30,20)} {'─'*10}")
+            for pr in sorted(res.ports, key=lambda x: x.port):
+                if args.open and pr.state != "open":
+                    continue
+                st_colored = _grn(pr.state) if pr.state == "open" else _yel(pr.state)
+                sv = _sanitize_text(pr.service or "", min(W-30,20))
+                vr = _sanitize_text(pr.version or "", 10)
+                lines.append(f"    {pr.port:<7} {pr.protocol.upper():<6} {st_colored:<12} {sv:<{min(W-30,20)}} {vr}")
+                if pr.banner and args.banner:
+                    lines.append(f"      {_cya('Banner:')} {_sanitize_text(pr.banner, W-20)}")
+                if pr.ssl_cert and args.ssl_cert:
+                    cn = _sanitize_text(pr.ssl_cert.get("subject",{}).get("commonName","") or "", 30)
+                    exp = _sanitize_text(pr.ssl_cert.get("notAfter","") or "", 15)
+                    lines.append(f"      {_cya('SSL:')} {cn}  exp:{exp}")
+            lines.append("")
+
+        # Web Analysis
+        if res.http_tech or res.http_dirs or res.api_endpoints or res.subdomains:
+            lines.append(f"  {_bld('Web')}")
+            if res.http_tech:
+                for name, cat in res.http_tech.items():
+                    lines.append(f"    {_sanitize_text(name, 25):<25} {cat}")
+            if res.http_dirs:
+                for d in res.http_dirs[:10]:
+                    sc = _grn(str(d["status"])) if d["status"] == 200 else _yel(str(d["status"]))
+                    lines.append(f"    {sc:<6} {_sanitize_text(d['path'], W-20)}")
+            if res.api_endpoints:
+                for ep in res.api_endpoints[:10]:
+                    j = ' (JSON)' if ep['json'] else ''
+                    lines.append(f"    {ep['status']:<6} {_sanitize_text(ep['path'], W-20)}{j}")
+            if res.subdomains:
+                for sd in res.subdomains[:10]:
+                    lines.append(f"    {_sanitize_text(sd['subdomain'], 35):<35} {sd['ip']}")
+            lines.append("")
+
+        # Traceroute
+        if res.traceroute:
+            lines.append(f"  {_bld('Traceroute')}")
+            for hop in res.traceroute[:10]:
+                ip_s = hop['ip'] if hop['ip'] != '*' else _cya('*')
+                rtt_s = f"{hop['rtt_ms']:.1f}ms" if hop['rtt_ms'] else _cya('*')
+                lines.append(f"    Hop {hop['hop']:<3} {ip_s:<18} {rtt_s}")
+            lines.append("")
+
+        # Network Intel
+        if res.geo or res.asn or res.shodan or res.whois:
+            lines.append(f"  {_bld('Intel')}")
+            if res.geo:
+                gd = res.geo
+                loc = f"{gd.get('city','')}, {gd.get('region','')}, {gd.get('country','')}"
+                lines.append(f"    Location:     {_sanitize_text(loc, W-20)}")
+                if gd.get('lat') is not None:
+                    lines.append(f"    Coordinates:  {gd['lat']}, {gd['lon']}")
+            if res.asn:
+                lines.append(f"    ASN/ISP:      {res.asn}  ({res.isp})")
+            if res.shodan and res.shodan.get("ports"):
+                lines.append(f"    Shodan Ports: {', '.join(map(str, res.shodan['ports']))}")
+            if res.whois:
+                for wl in res.whois.split("\n")[:5]:
+                    lines.append(f"    {_sanitize_text(wl, W-6)}")
+            lines.append("")
+
+        # Security
+        if res.cves or res.brute_creds:
+            lines.append(f"  {_bld('Security')}")
+            if res.cves:
+                for cve in sorted(set(res.cves)):
+                    lines.append(f"    {_red(cve)}")
+            if res.brute_creds:
+                for cred in res.brute_creds:
+                    lines.append(f"    {cred['user']}:{cred['password']}")
+            lines.append("")
+
+        if idx < len(results):
+            lines.append(f"  {'─' * W}")
+            lines.append("")
+
+    lines.append(f"  {sep}")
+    up_count = sum(1 for r in results if r.up)
+    lines.append(f"  {_bld('SCAN COMPLETE')}: {up_count}/{len(results)} hosts up  |  {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+    lines.append("")
+    return "\n".join(lines)
+
+
 # ── JSON ─────────────────────────────────────────────────────────────────
 def fmt_json(results: List[HostResult]) -> str:
     return json.dumps([asdict(r) for r in results], indent=2, default=str)
