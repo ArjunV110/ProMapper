@@ -1,0 +1,8 @@
+# promapper - no core dependencies required
+# 
+# Optional feature dependencies (install with pip install promapper[full]):
+#
+# scapy       -> SYN, FIN, NULL, Xmas, ACK, Window, Maimon, Idle scans
+# cryptography -> SSL certificate SHA-256/SHA-1 fingerprints
+# paramiko    -> SSH brute-force
+# dnspython   -> Custom DNS resolver support
