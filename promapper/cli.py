@@ -257,7 +257,7 @@ def main() -> None:
             print("[*] Updating PROMAPPER from GitHub...")
             try:
                 res = subprocess.run(
-                    ["git", "-C", project_dir, "pull", "--ff-only"],
+                    ["git", "-C", project_dir, "pull", "--no-rebase"],
                     capture_output=True, text=True, timeout=30,
                 )
                 if res.returncode == 0:
