@@ -152,13 +152,15 @@ def make_sock(timeout_val: Optional[float] = None, source_port: Optional[int] = 
 
 
 def tcp_connect_scan(host: str, port: int, timeout_val: Optional[float] = None,
-                     source_port: Optional[int] = None) -> bool:
+                     source_port: Optional[int] = None) -> Optional[bool]:
     sock = None
     try:
         sock = make_sock(timeout_val, source_port)
         sock.connect((host, port))
         return True
-    except (socket.timeout, ConnectionRefusedError, OSError):
+    except socket.timeout:
+        return None
+    except (ConnectionRefusedError, OSError):
         return False
     finally:
         if sock:
@@ -387,7 +389,8 @@ def scan_single_port(host: str, ip: str, port: int, scan_type: str = "connect",
         result.state = "open" if s is True else "closed" if s is False else "open|filtered"
         return result
     if scan_type == "connect":
-        result.state = "open" if tcp_connect_scan(ip, port, timeout_val) else "closed"
+        s = tcp_connect_scan(ip, port, timeout_val)
+        result.state = "open" if s is True else "closed" if s is False else "filtered"
         return result
     if scan_type == "idle":
         return result
