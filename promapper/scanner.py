@@ -262,6 +262,8 @@ def fin_scan(host: str, port: int, timeout_val: Optional[float] = None) -> Optio
                   timeout=timeout_val or cfg().timeout, verbose=0)
         if ans is None:
             return True
+        if ans.haslayer(ICMP):
+            return None
         if ans.haslayer(TCP) and ans.getlayer(TCP).flags == 0x14:
             return False
     except Exception:
@@ -277,6 +279,8 @@ def null_scan(host: str, port: int, timeout_val: Optional[float] = None) -> Opti
                   timeout=timeout_val or cfg().timeout, verbose=0)
         if ans is None:
             return True
+        if ans.haslayer(ICMP):
+            return None
         if ans.haslayer(TCP) and ans.getlayer(TCP).flags == 0x14:
             return False
     except Exception:
@@ -292,6 +296,8 @@ def xmas_scan(host: str, port: int, timeout_val: Optional[float] = None) -> Opti
                   timeout=timeout_val or cfg().timeout, verbose=0)
         if ans is None:
             return True
+        if ans.haslayer(ICMP):
+            return None
         if ans.haslayer(TCP) and ans.getlayer(TCP).flags == 0x14:
             return False
     except Exception:
@@ -333,6 +339,8 @@ def maimon_scan(host: str, port: int, timeout_val: Optional[float] = None) -> Op
                   timeout=timeout_val or cfg().timeout, verbose=0)
         if ans is None:
             return True
+        if ans.haslayer(ICMP):
+            return None
         if ans.haslayer(TCP) and ans.getlayer(TCP).flags == 0x14:
             return False
     except Exception:
@@ -400,7 +408,7 @@ def scan_single_port(host: str, ip: str, port: int, scan_type: str = "connect",
         return result
     s = func(ip, port, timeout_val)
     if scan_type in ("fin", "null", "xmas", "maimon"):
-        result.state = "open|filtered" if s else "closed" if s is False else "error"
+        result.state = "open|filtered" if s is True else "closed" if s is False else "filtered"
     elif scan_type == "ack":
         result.state = "unfiltered" if s else "filtered"
     elif scan_type == "window":

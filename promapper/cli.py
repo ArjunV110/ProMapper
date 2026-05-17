@@ -313,7 +313,7 @@ def main() -> None:
     }
     active_scapy = [name for flag, name in scapy_flags.items() if getattr(args, flag, False)]
     if active_scapy and not IS_WINDOWS and not IS_TERMUX and os.geteuid() != 0:
-        print(f"[!] Warning: {'/'.join(active_scapy)} require{'s' if len(active_scapy) == 1 else ''} root (sudo) for raw packets — falling back to connect() scan")
+        print(f"[!] Warning: {'/'.join(active_scapy)} require{'s' if len(active_scapy) == 1 else ''} root (sudo) for raw packets — results may be incomplete")
 
     is_batch = any([args.output_json, args.output_xml, args.html])
     if not is_batch:
