@@ -347,7 +347,8 @@ def main() -> None:
             break
 
         if not is_batch:
-            print(f"\n[*] Scan finished in {elapsed:.1f}s — {len(results)} hosts up")
+            up_count = sum(1 for r in results if r.up)
+            print(f"\n[*] Scan finished in {elapsed:.1f}s — {up_count}/{len(results)} hosts up")
 
         if args.diff or args.continuous:
             old_state = load_state()
