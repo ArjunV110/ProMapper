@@ -244,9 +244,9 @@ def syn_scan(host: str, port: int, timeout_val: Optional[float] = None) -> Optio
             return None
         if ans.haslayer(TCP):
             flags = ans.getlayer(TCP).flags
-            if flags == 0x12:
+            if flags & 0x12 == 0x12:
                 return True
-            if flags == 0x14:
+            if flags & 0x04:
                 return False
         return None
     except Exception as e:
@@ -264,7 +264,7 @@ def fin_scan(host: str, port: int, timeout_val: Optional[float] = None) -> Optio
             return True
         if ans.haslayer(ICMP):
             return None
-        if ans.haslayer(TCP) and ans.getlayer(TCP).flags == 0x14:
+        if ans.haslayer(TCP) and (ans.getlayer(TCP).flags & 0x04):
             return False
     except Exception:
         pass
@@ -281,7 +281,7 @@ def null_scan(host: str, port: int, timeout_val: Optional[float] = None) -> Opti
             return True
         if ans.haslayer(ICMP):
             return None
-        if ans.haslayer(TCP) and ans.getlayer(TCP).flags == 0x14:
+        if ans.haslayer(TCP) and (ans.getlayer(TCP).flags & 0x04):
             return False
     except Exception:
         pass
@@ -298,7 +298,7 @@ def xmas_scan(host: str, port: int, timeout_val: Optional[float] = None) -> Opti
             return True
         if ans.haslayer(ICMP):
             return None
-        if ans.haslayer(TCP) and ans.getlayer(TCP).flags == 0x14:
+        if ans.haslayer(TCP) and (ans.getlayer(TCP).flags & 0x04):
             return False
     except Exception:
         pass
@@ -311,7 +311,7 @@ def ack_scan(host: str, port: int, timeout_val: Optional[float] = None) -> Optio
     try:
         ans = sr1(IP(dst=host) / TCP(dport=port, flags="A"),
                   timeout=timeout_val or cfg().timeout, verbose=0)
-        if ans and ans.haslayer(TCP) and ans.getlayer(TCP).flags == 0x14:
+        if ans and ans.haslayer(TCP) and (ans.getlayer(TCP).flags & 0x04):
             return True
     except Exception:
         pass
@@ -341,7 +341,7 @@ def maimon_scan(host: str, port: int, timeout_val: Optional[float] = None) -> Op
             return True
         if ans.haslayer(ICMP):
             return None
-        if ans.haslayer(TCP) and ans.getlayer(TCP).flags == 0x14:
+        if ans.haslayer(TCP) and (ans.getlayer(TCP).flags & 0x04):
             return False
     except Exception:
         pass
