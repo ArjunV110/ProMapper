@@ -131,8 +131,7 @@ def scan_host(entry: Tuple[str, str], args: argparse.Namespace) -> HostResult:
     # Stage 3: Ping
     if args.ping_only:
         result.up = icmp_ping(ip) or ping_sweep(ip)
-        if not result.up:
-            return result
+        return result
 
     # Stage 4: Port scan
     ports = parse_ports(args.ports)
