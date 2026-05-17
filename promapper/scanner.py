@@ -47,6 +47,11 @@ except ImportError:
 
 # ── DNS / Resolution ────────────────────────────────────────────────────
 def resolve_host(host: str, dns_server: Optional[str] = None, retries: int = 2) -> Optional[str]:
+    try:
+        ipaddress.ip_address(host)
+        return host
+    except ValueError:
+        pass
     for attempt in range(retries + 1):
         try:
             if dns_server and HAS_DNS:

@@ -155,9 +155,9 @@ class ScanConfig:
 
     @classmethod
     def from_args(cls, args: argparse.Namespace) -> "ScanConfig":
-        to_val: float = args.timeout
-        thr_val: int = args.threads or 100
-        rate_val: int = args.rate_limit or 0
+        to_val: float = 2.0
+        thr_val: int = 100
+        rate_val: int = 0
 
         if args.timing is not None:
             timing_map = {
@@ -165,6 +165,13 @@ class ScanConfig:
                 3: (1.5, 100, 0), 4: (1.0, 200, 0), 5: (0.5, 500, 0),
             }
             to_val, thr_val, rate_val = timing_map.get(args.timing, timing_map[3])
+
+        if args.timeout is not None:
+            to_val = args.timeout
+        if args.threads is not None:
+            thr_val = args.threads
+        if args.rate_limit is not None:
+            rate_val = args.rate_limit
 
         rdelay: Tuple[float, float] = (0.0, 0.0)
         if args.random_delay:

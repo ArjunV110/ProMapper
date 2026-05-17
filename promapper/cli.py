@@ -214,12 +214,12 @@ def _build_parser() -> argparse.ArgumentParser:
     g_output.add_argument("--open", action="store_true", help="Show only open ports")
 
     g_perf = p.add_argument_group("Performance & Timing")
-    g_perf.add_argument("-T", "--timing", type=int, choices=range(0, 6), default=3,
+    g_perf.add_argument("-T", "--timing", type=int, choices=range(0, 6), default=None,
                         help="Timing template 0-5 (paranoid=0, insane=5)")
-    g_perf.add_argument("--threads", type=int, default=100, help="Max threads")
+    g_perf.add_argument("--threads", type=int, help="Max threads")
     g_perf.add_argument("--rate-limit", type=int, help="Packets per second")
     g_perf.add_argument("--random-delay", help="Random delay min,max (e.g. 0.1,1.0)")
-    g_perf.add_argument("--timeout", type=float, default=2.0, help="Socket timeout")
+    g_perf.add_argument("--timeout", type=float, help="Socket timeout")
     g_perf.add_argument("--fragment", action="store_true", help="Fragment packets (needs scapy)")
     g_perf.add_argument("--ttl", type=int, help="Set IP TTL")
 
