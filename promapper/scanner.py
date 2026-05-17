@@ -143,11 +143,12 @@ def make_sock(timeout_val: Optional[float] = None, source_port: Optional[int] = 
         sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     except OSError:
         pass
-    if source_port:
+    src = source_port or cfg().source_port
+    if src:
         try:
-            sock.bind(("0.0.0.0", source_port))
+            sock.bind(("0.0.0.0", src))
         except OSError:
-            logger.debug("source_port bind(%d) failed", source_port)
+            logger.debug("source_port bind(%d) failed", src)
     return sock
 
 
@@ -236,7 +237,7 @@ def udp_scan(host: str, port: int, timeout_val: Optional[float] = None) -> Optio
 def syn_scan(host: str, port: int, timeout_val: Optional[float] = None) -> Optional[bool]:
     if not HAS_SCAPY:
         logger.debug("SYN scan needs scapy, falling back to connect")
-        return tcp_connect_scan(host, port, timeout_val)
+        return tcp_connect_scan(host, port, timeout_val, cfg().source_port)
     try:
         ans = sr1(IP(dst=host) / TCP(dport=port, flags="S"),
                   timeout=timeout_val or cfg().timeout, verbose=0)
@@ -397,7 +398,7 @@ def scan_single_port(host: str, ip: str, port: int, scan_type: str = "connect",
         result.state = "open" if s is True else "closed" if s is False else "open|filtered"
         return result
     if scan_type == "connect":
-        s = tcp_connect_scan(ip, port, timeout_val)
+        s = tcp_connect_scan(ip, port, timeout_val, cfg().source_port)
         result.state = "open" if s is True else "closed" if s is False else "filtered"
         return result
     if scan_type == "idle":

@@ -49,7 +49,7 @@ def _stage_port_scan(
         for stype in scan_types:
             if stype == "idle" and zombie:
                 s = idle_scan(zombie, ip, port, timeout_val)
-                last_pr.state = "open" if s else "closed" if s is False else "filtered"
+                last_pr.state = "open" if s is True else "closed" if s is False else "filtered"
                 return last_pr
             pr = scan_single_port(ip, ip, port, stype, timeout_val)
             pr.state = pr.state if pr.state != "error" else "filtered"
