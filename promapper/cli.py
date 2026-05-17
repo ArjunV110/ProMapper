@@ -346,9 +346,10 @@ def main() -> None:
         if _shutdown_requested:
             break
 
+        up_results = [r for r in results if r.up]
+
         if not is_batch:
-            up_count = sum(1 for r in results if r.up)
-            print(f"\n[*] Scan finished in {elapsed:.1f}s — {up_count}/{len(results)} hosts up")
+            print(f"\n[*] Scan finished in {elapsed:.1f}s — {len(up_results)}/{len(results)} hosts up")
 
         if args.diff or args.continuous:
             old_state = load_state()
@@ -361,7 +362,7 @@ def main() -> None:
                     send_notification("promapper", f"{len(changes)} change(s) detected")
             save_state(results)
 
-        output_text = _fmt(results, args)
+        output_text = _fmt(up_results, args) if up_results else "[*] All hosts are down.\n"
         _write_outputs(results, args, output_text)
 
         if not args.continuous:
