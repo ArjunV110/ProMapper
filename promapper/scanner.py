@@ -121,7 +121,7 @@ def expand_targets(targets: List[str]) -> List[Tuple[str, str]]:
     for t in targets:
         try:
             net = ipaddress.ip_network(t, strict=False)
-            hosts = list(net.hosts())
+            hosts = list(net)
             if len(hosts) > MAX_CIDR_HOSTS:
                 logger.warning("%s expands to %d hosts, limiting to %d", t, len(hosts), MAX_CIDR_HOSTS)
                 hosts = hosts[:MAX_CIDR_HOSTS]
