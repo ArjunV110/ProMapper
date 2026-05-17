@@ -194,8 +194,10 @@ def udp_scan(host: str, port: int, timeout_val: Optional[float] = None) -> Optio
 
     if HAS_SCAPY:
         try:
-            ans = sr1(IP(dst=host) / UDP(dport=port) / payload,
-                      timeout=t, verbose=0)
+            pkt = IP(dst=host, ttl=cfg().ttl) / UDP(dport=port) / payload
+            if cfg().fragment:
+                pkt[IP].flags = 1
+            ans = sr1(pkt, timeout=t, verbose=0)
             if ans is None:
                 return None
             if ans.haslayer(ICMP):
@@ -235,9 +237,12 @@ def udp_scan(host: str, port: int, timeout_val: Optional[float] = None) -> Optio
 
 # ── Scapy helpers ───────────────────────────────────────────────────────
 def _make_tcp_pkt(dst: str, dport: int, flags: str) -> IP:
-    pkt = IP(dst=dst) / TCP(dport=dport, flags=flags)
-    if cfg().badsum:
+    conf = cfg()
+    pkt = IP(dst=dst, ttl=conf.ttl) / TCP(dport=dport, flags=flags)
+    if conf.badsum:
         pkt[TCP].chksum = 0xFFFF
+    if conf.fragment:
+        pkt[IP].flags = 1
     return pkt
 
 
@@ -379,9 +384,12 @@ def idle_scan(zombie: str, target: str, port: int,
         orig = get_ipid(zombie)
         if orig is None:
             return None
-        probe = IP(src=zombie, dst=target) / TCP(dport=port, flags="S")
-        if cfg().badsum:
+        conf = cfg()
+        probe = IP(src=zombie, dst=target, ttl=conf.ttl) / TCP(dport=port, flags="S")
+        if conf.badsum:
             probe[TCP].chksum = 0xFFFF
+        if conf.fragment:
+            probe[IP].flags = 1
         sr(probe, timeout=timeout_val or cfg().timeout, verbose=0)
         after = get_ipid(zombie)
         if after is None:
@@ -479,8 +487,10 @@ def ping_sweep(host: str, timeout_val: Optional[float] = None) -> bool:
 def icmp_ping(host: str, timeout_val: Optional[float] = None) -> bool:
     if HAS_SCAPY:
         try:
-            ans = sr1(IP(dst=host) / ICMP(),
-                      timeout=timeout_val or cfg().timeout, verbose=0)
+            pkt = IP(dst=host, ttl=cfg().ttl) / ICMP()
+            if cfg().fragment:
+                pkt[IP].flags = 1
+            ans = sr1(pkt, timeout=timeout_val or cfg().timeout, verbose=0)
             return ans is not None
         except Exception:
             pass
