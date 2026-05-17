@@ -299,5 +299,15 @@ def scan_host(entry: Tuple[str, str], args: argparse.Namespace) -> HostResult:
                 logger.info("Brute forcing %s on %s:%d", svc, ip, port_map[svc])
                 result.brute_creds.extend(brute_force(ip, port_map[svc], svc, users, passwords, timeout_val))
 
-    result.up = True
+    # Stage 21: Determine if host is up
+    # A host is "up" if we got a definitive response on any port:
+    # - "open" or "closed" means we received a response (TCP SYN/ACK, RST, or ICMP unreachable)
+    # - "open|filtered" alone is ambiguous - no response received
+    if any(pr.state in ("open", "closed", "unfiltered") for pr in port_results):
+        result.up = True
+    elif icmp_ping(ip) or ping_sweep(ip):
+        result.up = True
+    elif result.mac:
+        result.up = True
+
     return result

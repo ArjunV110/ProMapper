@@ -79,7 +79,11 @@ def get_service_name(port: int, proto: str = "tcp") -> str:
     try:
         if not (0 <= port <= 65535):
             return "unknown"
-        return socket.getservbyport(port, proto)
+        name = socket.getservbyport(port, proto)
+        # Sanitize: strip whitespace, newlines, and control characters
+        name = name.split("\n")[0].split("\r")[0].strip()
+        name = re.sub(r'[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]', '', name)
+        return name if name else "unknown"
     except (OSError, OverflowError):
         return "unknown"
 
