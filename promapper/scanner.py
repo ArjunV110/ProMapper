@@ -233,13 +233,21 @@ def udp_scan(host: str, port: int, timeout_val: Optional[float] = None) -> Optio
         return False
 
 
+# ── Scapy helpers ───────────────────────────────────────────────────────
+def _make_tcp_pkt(dst: str, dport: int, flags: str) -> IP:
+    pkt = IP(dst=dst) / TCP(dport=dport, flags=flags)
+    if cfg().badsum:
+        pkt[TCP].chksum = 0xFFFF
+    return pkt
+
+
 # ── Scapy-based scans ───────────────────────────────────────────────────
 def syn_scan(host: str, port: int, timeout_val: Optional[float] = None) -> Optional[bool]:
     if not HAS_SCAPY:
         logger.debug("SYN scan needs scapy, falling back to connect")
         return tcp_connect_scan(host, port, timeout_val, cfg().source_port)
     try:
-        ans = sr1(IP(dst=host) / TCP(dport=port, flags="S"),
+        ans = sr1(_make_tcp_pkt(host, port, "S"),
                   timeout=timeout_val or cfg().timeout, verbose=0)
         if ans is None:
             return None
@@ -259,7 +267,7 @@ def fin_scan(host: str, port: int, timeout_val: Optional[float] = None) -> Optio
     if not HAS_SCAPY:
         return None
     try:
-        ans = sr1(IP(dst=host) / TCP(dport=port, flags="F"),
+        ans = sr1(_make_tcp_pkt(host, port, "F"),
                   timeout=timeout_val or cfg().timeout, verbose=0)
         if ans is None:
             return True
@@ -276,7 +284,7 @@ def null_scan(host: str, port: int, timeout_val: Optional[float] = None) -> Opti
     if not HAS_SCAPY:
         return None
     try:
-        ans = sr1(IP(dst=host) / TCP(dport=port, flags=""),
+        ans = sr1(_make_tcp_pkt(host, port, ""),
                   timeout=timeout_val or cfg().timeout, verbose=0)
         if ans is None:
             return True
@@ -293,7 +301,7 @@ def xmas_scan(host: str, port: int, timeout_val: Optional[float] = None) -> Opti
     if not HAS_SCAPY:
         return None
     try:
-        ans = sr1(IP(dst=host) / TCP(dport=port, flags="FPU"),
+        ans = sr1(_make_tcp_pkt(host, port, "FPU"),
                   timeout=timeout_val or cfg().timeout, verbose=0)
         if ans is None:
             return True
@@ -310,7 +318,7 @@ def ack_scan(host: str, port: int, timeout_val: Optional[float] = None) -> Optio
     if not HAS_SCAPY:
         return None
     try:
-        ans = sr1(IP(dst=host) / TCP(dport=port, flags="A"),
+        ans = sr1(_make_tcp_pkt(host, port, "A"),
                   timeout=timeout_val or cfg().timeout, verbose=0)
         if ans and ans.haslayer(TCP) and (ans.getlayer(TCP).flags & 0x04):
             return True
@@ -323,20 +331,22 @@ def window_scan(host: str, port: int, timeout_val: Optional[float] = None) -> Op
     if not HAS_SCAPY:
         return None
     try:
-        ans = sr1(IP(dst=host) / TCP(dport=port, flags="A"),
+        ans = sr1(_make_tcp_pkt(host, port, "A"),
                   timeout=timeout_val or cfg().timeout, verbose=0)
-        if ans and ans.haslayer(TCP):
+        if ans is None:
+            return None
+        if ans.haslayer(TCP):
             return ans.getlayer(TCP).window > 0
     except Exception:
         pass
-    return False
+    return None
 
 
 def maimon_scan(host: str, port: int, timeout_val: Optional[float] = None) -> Optional[bool]:
     if not HAS_SCAPY:
         return None
     try:
-        ans = sr1(IP(dst=host) / TCP(dport=port, flags="FP"),
+        ans = sr1(_make_tcp_pkt(host, port, "FP"),
                   timeout=timeout_val or cfg().timeout, verbose=0)
         if ans is None:
             return True
@@ -357,7 +367,7 @@ def idle_scan(zombie: str, target: str, port: int,
 
     def get_ipid(host: str) -> Optional[int]:
         try:
-            ans = sr1(IP(dst=host) / TCP(dport=445, flags="SA"),
+            ans = sr1(_make_tcp_pkt(host, 445, "SA"),
                       timeout=timeout_val or cfg().timeout, verbose=0)
             if ans and ans.haslayer(IP):
                 return ans.getlayer(IP).id
@@ -369,8 +379,10 @@ def idle_scan(zombie: str, target: str, port: int,
         orig = get_ipid(zombie)
         if orig is None:
             return None
-        sr(IP(src=zombie, dst=target) / TCP(dport=port, flags="S"),
-           timeout=timeout_val or cfg().timeout, verbose=0)
+        probe = IP(src=zombie, dst=target) / TCP(dport=port, flags="S")
+        if cfg().badsum:
+            probe[TCP].chksum = 0xFFFF
+        sr(probe, timeout=timeout_val or cfg().timeout, verbose=0)
         after = get_ipid(zombie)
         if after is None:
             return None
@@ -413,7 +425,7 @@ def scan_single_port(host: str, ip: str, port: int, scan_type: str = "connect",
     elif scan_type == "ack":
         result.state = "unfiltered" if s else "filtered"
     elif scan_type == "window":
-        result.state = "open" if s else "closed"
+        result.state = "open" if s is True else "closed" if s is False else "filtered"
     else:
         result.state = "open" if s is True else "closed" if s is False else "filtered"
     return result
