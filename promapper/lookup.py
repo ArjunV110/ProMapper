@@ -77,7 +77,11 @@ def whois_lookup(host: str) -> str:
             relevant: List[str] = []
             keywords = ["OrgName", "OrgId", "NetRange", "CIDR", "NetName",
                         "Organization", "RegDate", "Updated", "Country",
-                        "Name", "Address", "City", "StateProv", "PostalCode"]
+                        "Name", "Address", "City", "StateProv", "PostalCode",
+                        "inetnum", "netname", "descr", "country", "org",
+                        "admin-c", "tech-c", "abuse-c", "status", "mnt-by",
+                        "mnt-irt", "person", "phone", "e-mail", "nic-hdl",
+                        "role", "remarks"]
             for line in lines:
                 for kw in keywords:
                     if line.strip().startswith(kw):
