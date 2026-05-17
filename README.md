@@ -176,26 +176,6 @@ promapper/
     └── orchestrator.py   ← scan_host pipeline (20 stages)
 ```
 
-## Output Example
-
-```
-  ┌─ Host Overview ──────────────────────────────────────────────────────┐
-  │ Hostname             scanme.nmap.org                                 │
-  │ IP Address           45.33.32.156                                    │
-  │ Reverse DNS          scanme.nmap.org                                 │
-  │ Latency              234.6 ms                                        │
-  └──────────────────────────────────────────────────────────────────────┘
-
-  ┌─ Open Ports ─────────────────────────────────────────────────────────┐
-  │ PORT    PROTO  STATE         SERVICE                VERSION          │
-  │ ────    ─────  ──────────    ────────────────────   ──────────────   │
-  │ 22      TCP    open          ssh                                     │
-  │ 80      TCP    open          http                                    │
-  └──────────────────────────────────────────────────────────────────────┘
-    Banner (22/tcp): SSH-2.0-OpenSSH_6.6.1p1 Ubuntu-2ubuntu2.13
-    Banner (80/tcp): HTTP/1.1 200 OK  (Server: Apache/2.4.7)
-```
-
 ## License
 
 MIT
