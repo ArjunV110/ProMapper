@@ -140,7 +140,7 @@ def fmt_terminal(results: List[HostResult], args) -> str:
 
         # ── Open Ports ─────────────────────────────────────────────────
         if res.ports:
-            _title = 'Open Ports'
+            _title = 'Port Scan Results'
             lines.append(f"  ┌─ {_bld(_title)} " + f"{'─' * (W - 3 - len(_title))}┐")
             hdr = f"{'PORT':<7} {'PROTO':<6} {'STATE':<13} {'SERVICE':<22} {'VERSION':<16}"
             sep = f"{'─' * 4:<7} {'─' * 5:<6} {'─' * 10:<13} {'─' * 20:<22} {'─' * 14:<16}"

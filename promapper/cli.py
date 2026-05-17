@@ -119,7 +119,9 @@ def _run_scan_pass(expanded: List[Tuple[str, str]], args: argparse.Namespace,
                 ] if v)
                 if res.geo and res.geo.get("country"):
                     tags += f" [{res.geo['country']}]"
-                print(f"  {res.host:<20} {res.ip:<15} {len(res.ports)} open ports{tags}")
+                open_count = sum(1 for p in res.ports if p.state == "open")
+                total = len(res.ports)
+                print(f"  {res.host:<20} {res.ip:<15} {open_count}/{total} open ports{tags}")
     return time.time() - start
 
 

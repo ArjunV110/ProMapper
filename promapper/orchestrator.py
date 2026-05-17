@@ -68,8 +68,8 @@ def _stage_port_scan(
             except Exception as e:
                 logger.debug("Port scan error on port %d: %s", p, e)
                 continue
+            results.append(pr)
             if pr.state == "open":
-                results.append(pr)
                 if pr.protocol == "udp":
                     open_udp.append(pr.port)
                 else:
@@ -83,6 +83,8 @@ def _stage_enrich_ports(
     host_cves: List[str] = []
     for pr in ports:
         pr.service = get_service_name(pr.port, pr.protocol)
+        if pr.state != "open":
+            continue
         if args.banner or args.service_version:
             if not pr.banner_grabbed and pr.protocol == "tcp":
                 pr.banner = banner_grab(ip, pr.port, timeout_val)
