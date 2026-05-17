@@ -28,7 +28,7 @@ def save_state(results: List[HostResult]) -> None:
             "os": r.os_guess, "latency_ms": r.latency_ms,
         } for r in results]
         with _STATE_LOCK:
-            with open(_STATE_FILE, "w") as f:
+            with open(_STATE_FILE, "w", encoding="utf-8") as f:
                 json.dump(data, f, indent=2)
     except Exception as e:
         logger.debug("Save state error: %s", e)
@@ -37,7 +37,7 @@ def save_state(results: List[HostResult]) -> None:
 def load_state() -> List[Dict[str, Any]]:
     try:
         with _STATE_LOCK:
-            with open(_STATE_FILE) as f:
+            with open(_STATE_FILE, encoding="utf-8") as f:
                 return json.load(f)
     except (FileNotFoundError, json.JSONDecodeError):
         return []
@@ -73,8 +73,10 @@ def send_notification(title: str, message: str) -> None:
             pass
     elif IS_MACOS:
         try:
+            esc_msg = message.replace('"', '\\"')
+            esc_title = title.replace('"', '\\"')
             subprocess.run(
-                ["osascript", "-e", f'display notification "{message}" with title "{title}"'],
+                ["osascript", "-e", f'display notification "{esc_msg}" with title "{esc_title}"'],
                 capture_output=True, timeout=2,
             )
         except (FileNotFoundError, subprocess.TimeoutExpired):

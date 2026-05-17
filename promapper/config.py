@@ -69,7 +69,8 @@ _ssl_warned: bool = False
 
 # ── Pre-compiled patterns ────────────────────────────────────────────────
 SHELL_META: re.Pattern = re.compile(r'[\n\r\t|;&`$(){}]')
-INVALID_PATH: re.Pattern = re.compile(r'(?:^|/)\.\.(?:/|$)')
+_SEP: str = re.escape(os.sep)
+INVALID_PATH: re.Pattern = re.compile(rf'(?:^|{_SEP})\.\.(?:{_SEP}|$)')
 TTL_RE: re.Pattern = re.compile(rb'(?:ttl|TTL)=(\d+)')
 TRACEROUTE_RE: re.Pattern = re.compile(r'\s*(\d+)\s+(\S+)')
 BANNER_VER_RE: re.Pattern = re.compile(r'(\d+\.\d+(?:\.\d+)?)')

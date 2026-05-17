@@ -69,7 +69,7 @@ def _parse_targets(args: argparse.Namespace) -> List[str]:
                 logger.error("Invalid target file path: %s", t)
                 continue
             try:
-                with open(t, errors="replace") as f:
+                with open(t, encoding="utf-8", errors="replace") as f:
                     for line in f:
                         line = line.strip()
                         if line and not line.startswith("#") and _is_valid_target(line):
@@ -87,7 +87,7 @@ def _parse_targets(args: argparse.Namespace) -> List[str]:
             logger.error("Invalid input file path: %s", args.input_file)
         else:
             try:
-                with open(args.input_file, errors="replace") as f:
+                with open(args.input_file, encoding="utf-8", errors="replace") as f:
                     for line in f:
                         line = line.strip()
                         if line and not line.startswith("#") and _is_valid_target(line):

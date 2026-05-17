@@ -279,7 +279,7 @@ def scan_host(entry: Tuple[str, str], args: argparse.Namespace) -> HostResult:
         passwords: List[str] = []
         if args.user_list and os.path.isfile(args.user_list):
             try:
-                with open(args.user_list, errors="replace") as f:
+                with open(args.user_list, encoding="utf-8", errors="replace") as f:
                     users = [line.strip() for line in f if line.strip()]
             except Exception as e:
                 logger.debug("Userlist error: %s", e)
@@ -287,7 +287,7 @@ def scan_host(entry: Tuple[str, str], args: argparse.Namespace) -> HostResult:
             users = ["admin", "root", "user", "test"]
         if args.password_list and os.path.isfile(args.password_list):
             try:
-                with open(args.password_list, errors="replace") as f:
+                with open(args.password_list, encoding="utf-8", errors="replace") as f:
                     passwords = [line.strip() for line in f if line.strip()]
             except Exception as e:
                 logger.debug("Passlist error: %s", e)

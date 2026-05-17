@@ -288,7 +288,7 @@ def dir_brute_force(host: str, port: int, wordlist_path: Optional[str] = None,
     dirs: List[str] = COMMON_DIRS
     if wordlist_path and os.path.isfile(wordlist_path):
         try:
-            with open(wordlist_path, errors="replace") as f:
+            with open(wordlist_path, encoding="utf-8", errors="replace") as f:
                 dirs = [line.strip() for line in f if line.strip()]
         except Exception as e:
             logger.debug("Wordlist error: %s", e)
@@ -372,7 +372,7 @@ def subdomain_enum(domain: str, wordlist_path: Optional[str] = None,
     subs: List[str] = COMMON_SUBDOMAINS
     if wordlist_path and os.path.isfile(wordlist_path):
         try:
-            with open(wordlist_path, errors="replace") as f:
+            with open(wordlist_path, encoding="utf-8", errors="replace") as f:
                 subs = [line.strip() for line in f if line.strip()]
         except Exception as e:
             logger.debug("Subdomain wordlist error: %s", e)

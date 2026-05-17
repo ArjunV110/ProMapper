@@ -16,11 +16,15 @@ from promapper.config import cfg, _get_ssl_ctx, SSL_PORTS
 
 logger = logging.getLogger(__name__)
 
-try:
-    import telnetlib
-    HAS_TELNETLIB = True
-except ImportError:
-    HAS_TELNETLIB = False
+import warnings
+
+with warnings.catch_warnings():
+    warnings.filterwarnings("ignore", category=DeprecationWarning)
+    try:
+        import telnetlib
+        HAS_TELNETLIB = True
+    except ImportError:
+        HAS_TELNETLIB = False
 
 try:
     import paramiko
