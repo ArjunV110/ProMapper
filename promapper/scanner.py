@@ -491,7 +491,8 @@ def icmp_ping(host: str, timeout_val: Optional[float] = None) -> bool:
             if cfg().fragment:
                 pkt[IP].flags = 1
             ans = sr1(pkt, timeout=timeout_val or cfg().timeout, verbose=0)
-            return ans is not None
+            if ans is not None:
+                return True
         except Exception:
             pass
     return ping_sweep(host, timeout_val)
